@@ -1,0 +1,32 @@
+SYNCDECK 0.2.0 — COMO ATUALIZAR
+
+É necessário atualizar as duas partes: Windows e Android.
+
+NO WINDOWS
+1. Extraia o novo pacote em uma pasta.
+2. Abra a pasta windows-agent.
+3. Execute Compilar-e-Iniciar.bat.
+4. O script fecha o agente antigo, recompila e inicia a versão nova.
+5. Não é necessário configurar o Firewall novamente se a porta continuar 47321.
+
+NO ANDROID
+1. Abra a pasta android-app no Android Studio e aguarde a sincronização.
+2. Execute Gerar-APK.bat.
+3. Copie android-app\SyncDeck.apk para o celular.
+4. Toque no arquivo e instale por cima do SyncDeck existente.
+5. Usando o mesmo PC para gerar o APK, o pareamento anterior deverá ser mantido.
+
+NOVO MODO DEITADO
+- Gire o celular: a interface entra em tela cheia.
+- São exibidas 3 colunas e somente os logos dos aplicativos.
+- Toque no logo para abrir ou trazer o programa para frente.
+- Segure o logo para abrir o menu: Abrir, Fechar janela ou Editar botão.
+- Gire novamente para deixar o celular em pé e acessar todas as configurações.
+
+IMAGENS DOS APLICATIVOS
+- O agente procura automaticamente o ícone no executável, no Menu Iniciar ou na pasta do Windows.
+- A primeira carga pode levar alguns segundos; depois as imagens ficam em cache no celular.
+- Se o Windows não localizar uma imagem, o ícone alternativo do botão será usado.
+
+IMPORTANTE
+Os logos automáticos só funcionam quando o agente 0.2.0 do Windows e o APK 0.2.0 estão atualizados.

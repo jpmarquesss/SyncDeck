@@ -1,0 +1,59 @@
+name: Relatar problema
+description: Informe uma falha reproduzível no SyncDeck.
+title: "[Bug] "
+labels:
+  - bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por ajudar. Remova IPs, IDs, caminhos pessoais e qualquer segredo antes de enviar.
+  - type: input
+    id: version
+    attributes:
+      label: Versão do SyncDeck
+      placeholder: "0.3.0 no Android e 0.3.0 no agente"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Ambiente
+      placeholder: "Windows 11, Moto G20, Android 11"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: O que aconteceu?
+      description: Descreva o resultado observado e o esperado.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Passos para reproduzir
+      placeholder: |
+        1. Abri...
+        2. Toquei...
+        3. O erro apareceu...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs ou mensagens
+      description: Cole somente o trecho necessário, já sanitizado.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verificações
+      options:
+        - label: Atualizei o APK e o agente para a mesma versão.
+          required: true
+        - label: Removi dados pessoais, IPs públicos, tokens e chaves.
+          required: true
+        - label: Este relato não descreve uma vulnerabilidade de segurança.
+          required: true

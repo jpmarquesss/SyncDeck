@@ -1,0 +1,44 @@
+name: Sugerir funcionalidade
+description: Proponha uma melhoria com caso de uso claro.
+title: "[Feature] "
+labels:
+  - enhancement
+  - needs-triage
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Qual necessidade você quer resolver?
+      description: Explique o problema antes da solução.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Solução proposta
+      description: Descreva o comportamento desejado no Android e no Windows.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+  - type: dropdown
+    id: security
+    attributes:
+      label: A mudança exige nova permissão Android ou acesso externo?
+      options:
+        - Não
+        - Talvez
+        - Sim
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Verificações
+      options:
+        - label: Procurei uma issue semelhante.
+          required: true
+        - label: Li o roadmap do projeto.
+          required: true

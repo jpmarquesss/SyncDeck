@@ -1,0 +1,14 @@
+{
+  "method": "POST",
+  "path": "/api/execute",
+  "timestamp": 1786440000,
+  "nonce": "AQIDBAUGBwgJCgsMDR4PEA",
+  "secretHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+  "body": "{\"ActionId\":\"chrome\",\"Operation\":\"open\",\"Confirmed\":false}",
+  "bodySha256": "39219856d3a55223aa8f4a26e79a3895ae3bab9d364ebf54bbb8dcd1655cda9d",
+  "signatureBase64Url": "CY6iAOR9ulMYDSjlr7khVYokrvCm4rubfNxfPUQwieQ",
+  "responseStatus": 200,
+  "responseBody": "{\"Ok\":true,\"Data\":null,\"Message\":\"Chrome foi aberto.\",\"Code\":null}",
+  "responseBodySha256": "0cdff9dc7122d2a03ec50b62ee6d1f2097faeee6649974c20fa165ad13aacc7e",
+  "responseSignatureBase64Url": "gM24LoNKqbdNYBhy27Mp3usGGWlXoRV-rkZZp0Q5lDo"
+}

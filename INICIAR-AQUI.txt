@@ -1,0 +1,22 @@
+SYNCDECK — PRIMEIROS PASSOS
+
+1. No PC, abra a pasta windows-agent.
+2. Execute Compilar-e-Iniciar.bat.
+3. Execute Configurar-Firewall.bat uma vez.
+4. No Android Studio, abra a pasta android-app e gere o APK.
+5. Instale SyncDeck.apk no Android.
+6. Clique no ícone do SyncDeck perto do relógio do Windows e escolha Parear celular.
+7. No app, digite o IP, confira a impressão digital e use o código de 6 números.
+
+TOQUE: abrir ou trazer a janela para frente.
+BOTÃO ×: fechar com confirmação; se houver várias janelas, escolher entre uma ou todas.
+TOQUE LONGO: editar o botão.
+BOTÃO +: adicionar um novo botão.
+
+MODO DEITADO: tela cheia com 3 colunas e somente os logos dos aplicativos.
+TOQUE LONGO DEITADO: menu para abrir, fechar ou editar.
+As imagens são encontradas automaticamente no Windows e guardadas em cache no celular.
+Um contorno luminoso identifica os aplicativos abertos e é atualizado automaticamente.
+O Chrome abre direto no perfil ativo/último perfil usado, sem mostrar o seletor de contas.
+
+Manual completo: README.md

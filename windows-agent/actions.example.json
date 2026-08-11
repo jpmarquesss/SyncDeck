@@ -1,0 +1,17 @@
+[
+  {
+    "Id": "meu-programa",
+    "Label": "Meu programa",
+    "Type": "app",
+    "Target": "C:\\Caminho\\Programa.exe",
+    "Arguments": "",
+    "ProcessNames": ["Programa"],
+    "AppNames": ["Nome no menu Iniciar"],
+    "FallbackUrl": "",
+    "Icon": "app",
+    "Color": "#4285F4",
+    "Confirm": false,
+    "Closable": true,
+    "Enabled": true
+  }
+]

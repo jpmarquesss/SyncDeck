@@ -1,0 +1,43 @@
+# Android
+.gradle/
+**/build/
+android-app/local.properties
+android-app/SyncDeck.apk
+*.apk
+*.aab
+*.jks
+*.keystore
+keystore.properties
+
+# Windows
+windows-agent/SyncDeckAgent.exe
+windows-agent/*.pdb
+*.exe
+*.dll
+*.pdb
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.p12
+*.key
+secrets.*
+
+# Test and tooling caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.tmp/
+dist/
+
+# Operating systems
+Thumbs.db
+.DS_Store

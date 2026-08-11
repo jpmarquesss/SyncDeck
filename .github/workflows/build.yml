@@ -1,0 +1,79 @@
+name: Validate and build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: syncdeck-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Repository validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate files and protocol
+        run: python3 scripts/validate_repository.py
+
+  android:
+    name: Android debug APK
+    needs: validate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+          cache-dependency-path: |
+            android-app/**/*.gradle
+            android-app/gradle/wrapper/gradle-wrapper.properties
+      - name: Build debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+      - name: Prepare artifact
+        run: cp app/build/outputs/apk/debug/app-debug.apk SyncDeck-debug.apk
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SyncDeck-Android-debug
+          path: android-app/SyncDeck-debug.apk
+          if-no-files-found: error
+          retention-days: 14
+
+  windows:
+    name: Windows agent
+    needs: validate
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build agent
+        shell: cmd
+        run: windows-agent\build-agent.bat
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SyncDeck-Windows
+          path: |
+            windows-agent/SyncDeckAgent.exe
+            windows-agent/Compilar-e-Iniciar.bat
+            windows-agent/Configurar-Firewall.bat
+            windows-agent/app.manifest
+          if-no-files-found: error
+          retention-days: 14

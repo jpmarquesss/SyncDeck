@@ -1,0 +1,15 @@
+SYNCDECK ANDROID 0.2.1 — CORREÇÃO DE INICIALIZAÇÃO
+
+Esta versão corrige o fechamento imediato do aplicativo no Android 11.
+
+CAUSA CORRIGIDA
+O modo de tela cheia estava sendo configurado antes de a janela principal do Android terminar de ser criada. Em aparelhos como o Moto G20 com Android 11, isso causava uma NullPointerException em WindowInsetsController.
+
+COMO ATUALIZAR
+1. Não é necessário alterar novamente o agente do Windows.
+2. Abra a pasta android-app desta versão no Android Studio.
+3. Execute Gerar-APK.bat.
+4. Copie o novo SyncDeck.apk para o celular.
+5. Instale por cima da versão anterior, sem desinstalar.
+
+Instalando por cima, o pareamento e as configurações permanecem salvos.

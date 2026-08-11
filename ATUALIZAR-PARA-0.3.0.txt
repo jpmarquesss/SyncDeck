@@ -1,0 +1,33 @@
+SYNCDECK 0.3.0 — COMO ATUALIZAR
+
+Esta atualização precisa ser instalada no Windows e no Android.
+
+NO WINDOWS
+1. Extraia o pacote novo em uma pasta.
+2. Abra a pasta windows-agent.
+3. Execute Compilar-e-Iniciar.bat.
+4. O script fecha o agente antigo, recompila e inicia a versão 0.3.0.
+5. Não é necessário configurar o Firewall novamente.
+6. Não é necessário parear o celular novamente.
+
+NO ANDROID
+1. Abra a pasta android-app no Android Studio.
+2. Execute Gerar-APK.bat.
+3. Copie android-app\SyncDeck.apk para o celular.
+4. Instale por cima do aplicativo existente, sem desinstalar.
+5. Usando o mesmo PC para gerar o APK, o pareamento e os botões serão mantidos.
+
+O QUE MUDOU
+- O agente procura janelas reais do Windows, inclusive Explorador e aplicativos modernos.
+- O Android atualiza automaticamente o estado aberto/fechado.
+- Um contorno luminoso aparece quando o aplicativo está aberto.
+- Quando existem várias janelas, o SyncDeck pergunta se deve fechar uma ou todas.
+- O Chrome abre diretamente no perfil ativo ou no último perfil usado.
+- O visual ganhou fundo glass com gradiente e animações ao abrir e fechar.
+
+TESTE RÁPIDO
+1. Abra o Chrome pelo SyncDeck.
+2. Aguarde até cerca de 3 segundos: o botão deve ficar iluminado.
+3. Abra duas janelas do Chrome.
+4. Toque em fechar: deverão aparecer as opções para fechar uma ou todas.
+5. Feche o Chrome e abra novamente pelo SyncDeck: ele deverá entrar direto no perfil usado anteriormente.

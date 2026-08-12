@@ -18,5 +18,7 @@ TOQUE LONGO DEITADO: menu para abrir, fechar ou editar.
 As imagens são encontradas automaticamente no Windows e guardadas em cache no celular.
 Um contorno luminoso identifica os aplicativos abertos e é atualizado automaticamente.
 O Chrome abre direto no perfil ativo/último perfil usado, sem mostrar o seletor de contas.
+Se o roteador mudar o IP do PC, o Android procura automaticamente o mesmo computador.
+O botão Desligar PC sempre pede confirmação e aguarda 5 segundos.
 
 Manual completo: README.md

@@ -191,6 +191,7 @@ def validate_source_invariants() -> None:
     server = read("windows-agent/src/DeckServer.cs")
     executor = read("windows-agent/src/ActionExecutor.cs")
     chrome = read("windows-agent/src/ChromeProfileResolver.cs")
+    stores = read("windows-agent/src/Stores.cs")
 
     if "buildInterface();" not in main or "configureWindow();" not in main:
         fail("Inicialização Android incompleta.")
@@ -209,6 +210,19 @@ def validate_source_invariants() -> None:
         fail("Resolução do perfil Chrome está incompleta.")
     if "SignResponse" not in server or "X-SyncDeck-Response-Signature" not in server:
         fail("Assinatura de resposta ausente no agente.")
+    if "getStatusWithRecovery" not in api or "server_fingerprint" not in api or "discoverPairedComputer" not in api:
+        fail("Recuperação automática do endereço do PC está incompleta.")
+    if "ClientsBackup" not in stores or "File.Replace(temp, DataPaths.Clients" not in stores:
+        fail("Persistência recuperável dos celulares pareados está incompleta.")
+    for action_id in ("chatgpt-web", "shutdown-pc"):
+        if action_id not in stores:
+            fail(f"Ação obrigatória ausente: {action_id}.")
+    if "isShutdownAction" not in main or 'Arguments = "/s /t 5"' not in stores:
+        fail("Confirmação segura de desligamento está incompleta.")
+    if 'Type = "url", Target = "https://chatgpt.com/"' not in stores or 'Arguments = "chrome"' not in stores:
+        fail("Abertura do ChatGPT no Chrome está incompleta.")
+    if "Apply031LayoutMigration" not in stores or "IsRemovedFrom031Layout" not in stores:
+        fail("Migração do painel 0.3.1 está incompleta.")
 
 
 def validate_wrapper() -> None:
@@ -242,7 +256,7 @@ def validate_markdown_links() -> None:
 
 
 def validate_forbidden_files() -> None:
-    forbidden_names = {"local.properties", "clients.json", "settings.json", "actions.json"}
+    forbidden_names = {"local.properties", "clients.json", "clients.backup.json", "settings.json", "actions.json"}
     forbidden_suffixes = {
         ".apk",
         ".aab",

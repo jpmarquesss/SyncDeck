@@ -186,9 +186,11 @@ public final class MainActivity extends Activity {
     private void refresh() {
         if (!api.isConfigured()) { setOnline(false, "Configure o endereço do PC"); showConnectionDialog(); return; }
         setLoading(true);
-        api.getStatus(new ApiClient.Callback<ApiClient.Status>() {
+        setOnline(false, api.isPaired() ? "Localizando PC…" : "Verificando conexão");
+        api.getStatusWithRecovery(new ApiClient.Callback<ApiClient.Status>() {
             @Override public void onSuccess(ApiClient.Status value, String message) {
                 if (subtitle != null) subtitle.setText(value.name);
+                if (value.endpointRecovered) showMessage("PC encontrado automaticamente em " + value.host + ".");
                 if (!api.isPaired()) {
                     setLoading(false);
                     setOnline(false, "Pareamento necessário");
@@ -345,11 +347,15 @@ public final class MainActivity extends Activity {
 
     private void runOpen(SyncAction action, View card) {
         if (action.confirm) {
+            boolean shutdown = isShutdownAction(action);
             new AlertDialog.Builder(this)
-                    .setTitle("Executar “" + action.label + "”?")
-                    .setMessage("Essa ação foi marcada como sensível.")
+                    .setTitle(shutdown ? "Desligar o PC?" : "Executar “" + action.label + "”?")
+                    .setMessage(shutdown
+                            ? "Salve seu trabalho. O Windows começará a desligar em 5 segundos."
+                            : "Essa ação foi marcada como sensível.")
                     .setNegativeButton("Cancelar", null)
-                    .setPositiveButton("Executar", (dialog, which) -> execute(action, "open", true, card))
+                    .setPositiveButton(shutdown ? "Desligar" : "Executar",
+                            (dialog, which) -> execute(action, "open", true, card))
                     .show();
         } else execute(action, "open", false, card);
     }
@@ -382,7 +388,8 @@ public final class MainActivity extends Activity {
         api.execute(action, operation, confirmed, new ApiClient.Callback<Boolean>() {
             @Override public void onSuccess(Boolean value, String message) {
                 if (card != null) card.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
-                showMessage(operation.startsWith("close") ? "Comando para fechar enviado." : action.label + " aberto no PC.");
+                showMessage(isShutdownAction(action) ? "Desligamento iniciado no PC." :
+                        operation.startsWith("close") ? "Comando para fechar enviado." : action.label + " aberto no PC.");
                 stateHandler.removeCallbacks(statePoll);
                 stateHandler.postDelayed(statePoll, operation.startsWith("close") ? 700 : 450);
             }
@@ -694,6 +701,11 @@ public final class MainActivity extends Activity {
 
     private static int safeColor(String value) {
         try { return Color.parseColor(value); } catch (Exception ignored) { return Color.rgb(105, 115, 134); }
+    }
+
+    private static boolean isShutdownAction(SyncAction action) {
+        return action != null && ("shutdown-pc".equalsIgnoreCase(action.id) ||
+                ("command".equalsIgnoreCase(action.type) && "power".equalsIgnoreCase(action.icon)));
     }
 
     private static String glyph(String icon) {

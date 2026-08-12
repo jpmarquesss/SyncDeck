@@ -43,6 +43,8 @@ O GitHub Actions executa os dois builds em sistemas operacionais nativos.
 | Rede | IP público ou hostname | Android rejeita o endpoint |
 | Pareamento | Fingerprint diferente | Android bloqueia o pareamento |
 | Pareamento | Código errado repetido | Limite de tentativas é aplicado |
+| Persistência | Reiniciar o Windows | Cliente continua autenticado sem novo pareamento |
+| Rede | IP do PC muda na mesma sub-rede | Android encontra a mesma impressão digital e salva o novo IP |
 | Abertura | Aplicativo fechado | Programa inicia |
 | Abertura | Aplicativo aberto/minimizado | Janela é restaurada e focada |
 | Estado | Janela abre/fecha | Contorno muda em até alguns segundos |
@@ -50,6 +52,8 @@ O GitHub Actions executa os dois builds em sistemas operacionais nativos.
 | Fechamento | Documento não salvo | Aplicativo pode exibir seu aviso normal |
 | Chrome | Janela existente | A mesma janela é trazida para frente |
 | Chrome | Nenhuma janela | Último perfil abre sem seletor |
+| ChatGPT | Tocar no botão web | <code>chatgpt.com</code> abre no perfil atual/último do Chrome |
+| Desligamento | Tocar em Desligar PC | Android exige confirmação explícita antes de enviar |
 | Explorer | Nenhuma pasta aberta | Cartão permanece fechado |
 | Explorer | Duas pastas abertas | Contagem e fechamento múltiplo funcionam |
 | Ícones | Primeiro carregamento | Ícone é obtido do Windows e armazenado em cache |

@@ -1,6 +1,6 @@
 # Protocolo local
 
-Este documento descreve o protocolo da versão 0.3.0. Mudanças incompatíveis devem atualizar a versão do agente, este documento e os vetores em <code>tests/</code>.
+Este documento descreve o protocolo da versão 0.3.1. Mudanças incompatíveis devem atualizar a versão do agente, este documento e os vetores em <code>tests/</code>.
 
 ## Transporte
 

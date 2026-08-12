@@ -20,6 +20,9 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
@@ -29,11 +32,19 @@ import java.security.SecureRandom;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.OAEPParameterSpec;
@@ -47,6 +58,7 @@ public final class ApiClient {
 
     public static final class Status {
         public String name;
+        public String host;
         public String fingerprint;
         public String modulus;
         public String exponent;
@@ -54,6 +66,7 @@ public final class ApiClient {
         public long expiresAt;
         public long serverTime;
         public int pairedDevices;
+        public boolean endpointRecovered;
     }
 
     public static final class ActionState {
@@ -72,12 +85,15 @@ public final class ApiClient {
 
     private static final String PREFS = "syncdeck";
     private static final int MAX_RESPONSE = 262144;
+    private static final int DISCOVERY_WORKERS = 24;
+    private static final long DISCOVERY_LIMIT_MILLIS = 6500L;
     private final SharedPreferences preferences;
     private final SecureStore secureStore;
     private final File iconCache;
     private final ExecutorService executor = Executors.newFixedThreadPool(3);
     private final Handler main = new Handler(Looper.getMainLooper());
     private volatile long clockOffsetSeconds;
+    private volatile String pendingServerFingerprint;
 
     public ApiClient(Context context) {
         preferences = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
@@ -90,41 +106,47 @@ public final class ApiClient {
     public String getHost() { return preferences.getString("host", ""); }
     public int getPort() { return preferences.getInt("port", 47321); }
     public String getClientId() { return preferences.getString("client_id", ""); }
+    private String getServerFingerprint() { return preferences.getString("server_fingerprint", ""); }
     public boolean isConfigured() { return isPrivateIPv4(getHost()) && getPort() > 0; }
     public boolean isPaired() { return isConfigured() && !getClientId().isEmpty() && secureStore.getSecret() != null; }
 
     public void setEndpoint(String host, int port) {
         if (!isPrivateIPv4(host)) throw new IllegalArgumentException("Use um IP privado, como 192.168.0.10.");
         if (port < 1024 || port > 65535) throw new IllegalArgumentException("Porta inválida.");
-        preferences.edit().putString("host", host.trim()).putInt("port", port).apply();
+        if (!preferences.edit().putString("host", host.trim()).putInt("port", port).commit())
+            throw new IllegalStateException("Não foi possível salvar o endereço do PC.");
     }
 
     public void clearPairing() {
         secureStore.clear();
-        preferences.edit().remove("client_id").apply();
+        preferences.edit().remove("client_id").remove("server_fingerprint").commit();
+        pendingServerFingerprint = null;
     }
 
     public void getStatus(Callback<Status> callback) {
         run(callback, () -> {
-            JSONObject envelope = request("GET", "/api/status", null, false);
-            JSONObject data = envelope.getJSONObject("Data");
-            Status status = new Status();
-            status.name = data.optString("name", "PC Windows");
-            status.serverTime = data.optLong("serverTime", System.currentTimeMillis() / 1000L);
-            status.pairedDevices = data.optInt("pairedDevices", 0);
-            JSONObject pairing = data.optJSONObject("pairing");
-            if (pairing != null) {
-                status.pairingAvailable = pairing.optBoolean("Available", false);
-                status.modulus = pairing.optString("Modulus", "");
-                status.exponent = pairing.optString("Exponent", "");
-                status.fingerprint = keyFingerprint(status.modulus, status.exponent);
-                String advertised = pairing.optString("Fingerprint", "");
-                if (!advertised.isEmpty() && !advertised.equalsIgnoreCase(status.fingerprint))
-                    throw new FriendlyException("A chave recebida não corresponde ao agente. Não faça o pareamento.");
-                status.expiresAt = pairing.optLong("ExpiresAt", 0);
-            }
-            clockOffsetSeconds = status.serverTime - System.currentTimeMillis() / 1000L;
+            Status status = fetchStatusAt(getHost(), getPort(), 4500, 7000);
+            observeServer(status);
             return status;
+        });
+    }
+
+    public void getStatusWithRecovery(Callback<Status> callback) {
+        run(callback, () -> {
+            Exception original;
+            try {
+                Status status = fetchStatusAt(getHost(), getPort(), 4500, 7000);
+                observeServer(status);
+                return status;
+            } catch (Exception exception) {
+                original = exception;
+            }
+
+            Status recovered = discoverPairedComputer();
+            if (recovered == null) throw original;
+            recovered.endpointRecovered = true;
+            observeServer(recovered);
+            return recovered;
         });
     }
 
@@ -152,7 +174,11 @@ public final class ApiClient {
             request("POST", "/api/pair", body, false);
 
             secureStore.putSecret(secret);
-            preferences.edit().putString("client_id", clientId).commit();
+            if (!preferences.edit()
+                    .putString("client_id", clientId)
+                    .putString("server_fingerprint", status.fingerprint == null ? "" : status.fingerprint)
+                    .commit()) throw new FriendlyException("O Android não conseguiu salvar o pareamento.");
+            pendingServerFingerprint = null;
             return Boolean.TRUE;
         });
     }
@@ -249,12 +275,17 @@ public final class ApiClient {
     }
 
     private RawResponse requestRaw(String method, String path, JSONObject json, boolean signed, String accept) throws Exception {
+        return requestRawAt(getHost(), getPort(), method, path, json, signed, accept, 4500, 7000);
+    }
+
+    private RawResponse requestRawAt(String host, int port, String method, String path, JSONObject json,
+                                     boolean signed, String accept, int connectTimeout, int readTimeout) throws Exception {
         byte[] body = json == null ? new byte[0] : json.toString().getBytes(StandardCharsets.UTF_8);
-        URL url = new URL("http://" + getHost() + ":" + getPort() + path);
+        URL url = new URL("http://" + host + ":" + port + path);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         try {
-            connection.setConnectTimeout(4500);
-            connection.setReadTimeout(7000);
+            connection.setConnectTimeout(connectTimeout);
+            connection.setReadTimeout(readTimeout);
             connection.setUseCaches(false);
             connection.setRequestMethod(method);
             connection.setRequestProperty("Accept", accept);
@@ -294,11 +325,142 @@ public final class ApiClient {
                 String expected = SignatureUtil.signResponse(requestSecret, status, requestNonce, response);
                 if (!SignatureUtil.constantTimeEquals(expected, supplied))
                     throw new FriendlyException("A resposta do PC não pôde ser autenticada. Pareie novamente ou verifique a rede.");
+                confirmObservedServer();
             }
             return new RawResponse(status, connection.getContentType(), response);
         } finally {
             connection.disconnect();
         }
+    }
+
+    private Status fetchStatusAt(String host, int port, int connectTimeout, int readTimeout) throws Exception {
+        if (!isPrivateIPv4(host) || port < 1024 || port > 65535)
+            throw new FriendlyException("Endereço privado do PC inválido.");
+        RawResponse raw = requestRawAt(host, port, "GET", "/api/status", null, false,
+                "application/json", connectTimeout, readTimeout);
+        JSONObject envelope = new JSONObject(new String(raw.body, StandardCharsets.UTF_8));
+        if (!envelope.optBoolean("Ok", false))
+            throw new FriendlyException(envelope.optString("Message", "O agente recusou a solicitação."));
+        JSONObject data = envelope.getJSONObject("Data");
+        Status status = new Status();
+        status.name = data.optString("name", "PC Windows");
+        status.serverTime = data.optLong("serverTime", System.currentTimeMillis() / 1000L);
+        status.pairedDevices = data.optInt("pairedDevices", 0);
+        status.host = host;
+        JSONObject pairing = data.optJSONObject("pairing");
+        if (pairing != null) {
+            status.pairingAvailable = pairing.optBoolean("Available", false);
+            status.modulus = pairing.optString("Modulus", "");
+            status.exponent = pairing.optString("Exponent", "");
+            if (!status.modulus.isEmpty() && !status.exponent.isEmpty()) {
+                status.fingerprint = keyFingerprint(status.modulus, status.exponent);
+                String advertised = pairing.optString("Fingerprint", "");
+                if (!advertised.isEmpty() && !advertised.equalsIgnoreCase(status.fingerprint))
+                    throw new FriendlyException("A chave recebida não corresponde ao agente. Não faça o pareamento.");
+            }
+            status.expiresAt = pairing.optLong("ExpiresAt", 0);
+        }
+        return status;
+    }
+
+    private void observeServer(Status status) {
+        if (status == null) return;
+        clockOffsetSeconds = status.serverTime - System.currentTimeMillis() / 1000L;
+        if (status.fingerprint != null && !status.fingerprint.isEmpty())
+            pendingServerFingerprint = status.fingerprint;
+    }
+
+    private void confirmObservedServer() {
+        String fingerprint = pendingServerFingerprint;
+        if (fingerprint == null || fingerprint.isEmpty() || getClientId().isEmpty()) return;
+        if (preferences.edit().putString("server_fingerprint", fingerprint).commit())
+            pendingServerFingerprint = null;
+    }
+
+    private Status discoverPairedComputer() {
+        String expected = getServerFingerprint();
+        if (expected.isEmpty() || getClientId().isEmpty() || secureStore.getSecret() == null) return null;
+
+        LinkedHashSet<String> prefixes = privatePrefixes();
+        if (prefixes.isEmpty()) return null;
+        Set<String> ownAddresses = localPrivateAddresses();
+        List<String> candidates = new ArrayList<>();
+        for (String prefix : prefixes) {
+            for (int last = 1; last <= 254; last++) {
+                String candidate = prefix + last;
+                if (!candidate.equals(getHost()) && !ownAddresses.contains(candidate)) candidates.add(candidate);
+            }
+        }
+
+        ExecutorService pool = Executors.newFixedThreadPool(DISCOVERY_WORKERS);
+        CompletionService<DiscoveredServer> completion = new ExecutorCompletionService<>(pool);
+        List<Future<DiscoveredServer>> pending = new ArrayList<>();
+        for (String candidate : candidates) {
+            pending.add(completion.submit(() -> {
+                try {
+                    Status status = fetchStatusAt(candidate, getPort(), 320, 550);
+                    if (expected.equalsIgnoreCase(status.fingerprint))
+                        return new DiscoveredServer(candidate, status);
+                } catch (Exception ignored) { }
+                return null;
+            }));
+        }
+
+        long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(DISCOVERY_LIMIT_MILLIS);
+        try {
+            for (int remaining = pending.size(); remaining > 0; remaining--) {
+                long wait = deadline - System.nanoTime();
+                if (wait <= 0) break;
+                Future<DiscoveredServer> future = completion.poll(wait, TimeUnit.NANOSECONDS);
+                if (future == null) break;
+                DiscoveredServer found = future.get();
+                if (found == null) continue;
+                if (!preferences.edit().putString("host", found.host).commit()) return null;
+                return found.status;
+            }
+        } catch (Exception ignored) {
+            return null;
+        } finally {
+            for (Future<DiscoveredServer> future : pending) future.cancel(true);
+            pool.shutdownNow();
+        }
+        return null;
+    }
+
+    private LinkedHashSet<String> privatePrefixes() {
+        LinkedHashSet<String> prefixes = new LinkedHashSet<>();
+        String saved = prefixOf(getHost());
+        if (saved != null) prefixes.add(saved);
+        for (String address : localPrivateAddresses()) {
+            String prefix = prefixOf(address);
+            if (prefix != null) prefixes.add(prefix);
+            if (prefixes.size() >= 3) break;
+        }
+        return prefixes;
+    }
+
+    private static Set<String> localPrivateAddresses() {
+        Set<String> values = new HashSet<>();
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            while (interfaces != null && interfaces.hasMoreElements()) {
+                NetworkInterface network = interfaces.nextElement();
+                if (!network.isUp() || network.isLoopback()) continue;
+                Enumeration<InetAddress> addresses = network.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress address = addresses.nextElement();
+                    if (address instanceof Inet4Address && isPrivateIPv4(address.getHostAddress()))
+                        values.add(address.getHostAddress());
+                }
+            }
+        } catch (Exception ignored) { }
+        return values;
+    }
+
+    private static String prefixOf(String address) {
+        if (!isPrivateIPv4(address)) return null;
+        int separator = address.lastIndexOf('.');
+        return separator < 0 ? null : address.substring(0, separator + 1);
     }
 
     private static String responseMessage(byte[] body, String fallback) {
@@ -428,6 +590,11 @@ public final class ApiClient {
         RawResponse(int status, String contentType, byte[] body) {
             this.status = status; this.contentType = contentType; this.body = body;
         }
+    }
+    private static final class DiscoveredServer {
+        final String host;
+        final Status status;
+        DiscoveredServer(String host, Status status) { this.host = host; this.status = status; }
     }
     private static final class FriendlyException extends Exception { FriendlyException(String message) { super(message); } }
 }

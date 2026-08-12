@@ -30,6 +30,11 @@ windows-agent/*.pdb
 *.p12
 *.key
 secrets.*
+**/clients.json
+**/clients.backup.json
+**/settings.json
+**/actions.json
+**/actions-v*.migrated
 
 # Test and tooling caches
 __pycache__/

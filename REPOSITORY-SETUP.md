@@ -28,7 +28,7 @@ Abra o Terminal na raiz do projeto e execute:
 ```powershell
 git init
 git add .
-git commit -m "feat: publica SyncDeck 0.3.0"
+git commit -m "feat: publica SyncDeck 0.3.1"
 git branch -M main
 git remote add origin https://github.com/SEU-USUARIO/SyncDeck.git
 git push -u origin main

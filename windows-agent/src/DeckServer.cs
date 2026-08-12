@@ -104,7 +104,7 @@ namespace SyncDeck.Agent
                 WriteResponse(stream, 200, Success(new
                 {
                     name = Environment.MachineName,
-                    version = "0.3.0",
+                    version = "0.3.1",
                     serverTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                     pairedDevices = _clients.Count,
                     pairing = pairing

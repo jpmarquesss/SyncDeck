@@ -2,6 +2,25 @@
 
 Todas as mudanças relevantes do SyncDeck são registradas neste arquivo. O projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [0.3.1] - 2026-08-12
+
+### Adicionado
+
+- Reconexão automática ao mesmo PC quando o endereço IPv4 muda após reiniciar o computador ou o roteador.
+- Botão **ChatGPT** que abre <code>https://chatgpt.com/</code> diretamente no perfil atual/último perfil do Chrome.
+- Botão **Desligar PC** com aviso explícito e confirmação antes de iniciar o desligamento em cinco segundos.
+- Ícones próprios para ChatGPT e desligamento.
+
+### Alterado
+
+- O painel personalizado remove automaticamente Android Studio/Android App e Downloads uma única vez durante a atualização.
+- O parâmetro do perfil do Chrome agora é posicionado antes da URL.
+
+### Corrigido
+
+- Gravação do endereço e do pareamento no Android reforçada com persistência síncrona.
+- Arquivo de celulares pareados no Windows agora usa gravação atômica e cópia de segurança recuperável.
+
 ## [0.3.0] - 2026-08-11
 
 ### Adicionado

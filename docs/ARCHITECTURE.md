@@ -36,7 +36,7 @@ flowchart TD
 | Classe | Responsabilidade |
 |---|---|
 | <code>MainActivity</code> | Montar a interface, executar ações, animar cartões e atualizar estados |
-| <code>ApiClient</code> | Construir requisições, validar respostas, buscar ações/ícones e administrar threads |
+| <code>ApiClient</code> | Construir requisições, validar respostas, buscar ações/ícones e recuperar mudanças do IP local |
 | <code>SecureStore</code> | Proteger o segredo do cliente com Android Keystore e AES-GCM |
 | <code>SignatureUtil</code> | Hash SHA-256, HMAC e Base64URL |
 | <code>SyncAction</code> | Modelo JSON de uma ação |
@@ -98,9 +98,10 @@ O agente grava no perfil do usuário:
 |---|---|
 | <code>%LOCALAPPDATA%\SyncDeck\actions.json</code> | Ações configuradas |
 | <code>%LOCALAPPDATA%\SyncDeck\clients.json</code> | Clientes pareados e segredos protegidos |
+| <code>%LOCALAPPDATA%\SyncDeck\clients.backup.json</code> | Cópia recuperável do pareamento |
 | <code>%LOCALAPPDATA%\SyncDeck\settings.json</code> | Porta e inicialização |
 
-O Android usa SharedPreferences para endpoint/ID e Android Keystore para o segredo. Ícones ficam apenas no cache da aplicação.
+O Android usa SharedPreferences para endpoint, ID e impressão digital do PC, e Android Keystore para o segredo. Ícones ficam apenas no cache da aplicação. Quando o endereço salvo deixa de responder, o Android examina por alguns segundos os endereços privados da rede e aceita somente o agente com a mesma impressão digital pareada.
 
 ## Limites de confiança
 

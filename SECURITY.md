@@ -34,6 +34,7 @@ Alguns aplicativos bancários podem alertar sobre modo desenvolvedor, depuraçã
 - **Autenticação:** HMAC‑SHA‑256 sobre método, rota, horário, nonce e hash do corpo. As respostas também são assinadas e conferidas pelo Android antes de serem usadas.
 - **Antirrepetição:** janela de horário de 90 segundos e cache de nonces já utilizados.
 - **Proteção em repouso:** Android Keystore com AES‑GCM e Windows DPAPI no escopo do usuário atual.
+- **Recuperação de IP:** a busca local aceita somente o agente cuja impressão digital pública coincide com o PC pareado; comandos continuam exigindo HMAC.
 - **Execução:** somente ações salvas. O fechamento usa `WM_CLOSE`; não existe encerramento forçado de processos.
 - **Comandos:** ações do tipo `command` exigem confirmação e executam diretamente o programa configurado, sem concatenar texto recebido a um shell.
 - **Imagens:** os ícones são extraídos localmente do Windows, enviados em PNG por uma resposta autenticada e recusados pelo Android se excederem os limites de tamanho ou dimensão.

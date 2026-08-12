@@ -36,8 +36,8 @@ O executável atual não possui assinatura Authenticode. O Windows pode exibir a
 ## 4. Tag
 
 ~~~powershell
-git tag -a v0.3.0 -m "SyncDeck 0.3.0"
-git push origin v0.3.0
+git tag -a v0.3.1 -m "SyncDeck 0.3.1"
+git push origin v0.3.1
 ~~~
 
 ## 5. GitHub Release

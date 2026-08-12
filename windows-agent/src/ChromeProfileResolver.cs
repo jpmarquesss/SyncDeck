@@ -19,7 +19,7 @@ namespace SyncDeck.Agent
             string profile = ResolveActiveProfile();
             if (string.IsNullOrWhiteSpace(profile)) return arguments;
             string selection = "--profile-directory=\"" + profile.Replace("\"", string.Empty) + "\"";
-            return string.IsNullOrWhiteSpace(arguments) ? selection : arguments + " " + selection;
+            return string.IsNullOrWhiteSpace(arguments) ? selection : selection + " " + arguments;
         }
 
         private static bool IsChrome(ActionDefinition action)

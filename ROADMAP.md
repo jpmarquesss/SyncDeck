@@ -4,7 +4,7 @@ O roadmap registra direções desejadas, não promessas de prazo.
 
 ## Próximas melhorias
 
-- Descoberta automática do agente na rede local e pareamento por QR Code.
+- Pareamento por QR Code.
 - TLS com certificado fixado no aplicativo.
 - Reordenação dos botões diretamente no Android.
 - Páginas e perfis diferentes de painel.

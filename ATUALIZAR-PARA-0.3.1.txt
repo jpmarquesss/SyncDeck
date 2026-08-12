@@ -1,0 +1,35 @@
+SYNCDECK 0.3.1 — COMO ATUALIZAR
+
+Instale esta atualização no Windows e no Android. Não desinstale o app atual.
+
+NO WINDOWS
+1. Extraia o pacote novo em uma pasta.
+2. Abra a pasta windows-agent.
+3. Execute Compilar-e-Iniciar.bat.
+4. O agente antigo será fechado, recompilado e iniciado na versão 0.3.1.
+5. Não é necessário parear novamente.
+
+NO ANDROID
+1. Abra a pasta android-app no Android Studio.
+2. Execute Gerar-APK.bat.
+3. Copie android-app\SyncDeck.apk para o celular.
+4. Instale por cima do SyncDeck atual, sem desinstalar.
+5. Abra o app enquanto o PC estiver ligado e na mesma rede.
+
+IMPORTANTE
+- O APK precisa ser assinado com a mesma chave usada na instalação anterior.
+- Na primeira abertura, o app registra a impressão digital do PC.
+- Depois disso, se o roteador mudar o IP do computador, o app tenta encontrá-lo automaticamente.
+- A busca automática pode levar até cerca de 7 segundos.
+
+NOVOS BOTÕES
+- Android Studio/Android App e Downloads são removidos uma única vez.
+- ChatGPT abre https://chatgpt.com/ no perfil atual ou no último perfil do Chrome.
+- Desligar PC sempre pede confirmação e inicia o desligamento após 5 segundos.
+
+TESTE RÁPIDO
+1. Confirme que os botões ChatGPT e Desligar PC aparecem.
+2. Toque em ChatGPT e verifique se a página abre no Chrome correto.
+3. Reinicie o PC e aguarde o agente aparecer perto do relógio.
+4. Abra o SyncDeck: ele deve reconectar sem desparear.
+5. Teste Desligar PC somente depois de salvar todo o trabalho aberto.

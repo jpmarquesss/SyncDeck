@@ -132,3 +132,45 @@ Para ações cujo processo é <code>chrome</code>, o agente acrescenta automatic
 4. perfil <code>Default</code>, se existente.
 
 Um argumento manual <code>--profile-directory</code> sempre tem prioridade.
+
+## ChatGPT no Chrome
+
+~~~json
+{
+  "Id": "chatgpt-web",
+  "Label": "ChatGPT",
+  "Type": "url",
+  "Target": "https://chatgpt.com/",
+  "Arguments": "chrome",
+  "ProcessNames": [],
+  "AppNames": [],
+  "Icon": "codex",
+  "Color": "#10A37F",
+  "Confirm": false,
+  "Closable": false,
+  "Enabled": true
+}
+~~~
+
+Para ações do tipo <code>url</code>, o argumento especial <code>chrome</code> abre o site explicitamente no Google Chrome. Cada toque abre a página em uma guia, usando o perfil ativo ou o último perfil utilizado. Sem esse argumento, o navegador padrão do Windows é usado.
+
+## Desligar o PC
+
+~~~json
+{
+  "Id": "shutdown-pc",
+  "Label": "Desligar PC",
+  "Type": "command",
+  "Target": "shutdown.exe",
+  "Arguments": "/s /t 5",
+  "ProcessNames": [],
+  "AppNames": [],
+  "Icon": "power",
+  "Color": "#EF4444",
+  "Confirm": true,
+  "Closable": false,
+  "Enabled": true
+}
+~~~
+
+O Android exibe um aviso específico antes de executar. O agente também recusa o comando se a confirmação autenticada não estiver presente.

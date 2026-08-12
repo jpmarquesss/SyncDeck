@@ -88,6 +88,9 @@ namespace SyncDeck.Agent
 
         private static byte[] ResolveCore(ActionDefinition action)
         {
+            byte[] themed = CreateThemedIcon(action);
+            if (themed != null) return themed;
+
             string target = ResolveFileTarget(action.Target);
             byte[] image = IconFromEmbeddedResource(target, IsWindowsAppAlias(target));
             if (image != null) return image;
@@ -124,6 +127,52 @@ namespace SyncDeck.Agent
                 if (image != null) return image;
             }
             return null;
+        }
+
+        private static byte[] CreateThemedIcon(ActionDefinition action)
+        {
+            string icon = action == null ? string.Empty : (action.Icon ?? string.Empty).Trim().ToLowerInvariant();
+            if (icon != "power" && icon != "codex") return null;
+            try
+            {
+                using (Bitmap canvas = new Bitmap(IconSize, IconSize, PixelFormat.Format32bppArgb))
+                using (Graphics graphics = Graphics.FromImage(canvas))
+                using (MemoryStream memory = new MemoryStream())
+                {
+                    graphics.Clear(Color.Transparent);
+                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    Color color;
+                    try { color = ColorTranslator.FromHtml(action.Color ?? (icon == "power" ? "#EF4444" : "#10A37F")); }
+                    catch { color = icon == "power" ? Color.FromArgb(239, 68, 68) : Color.FromArgb(16, 163, 127); }
+                    using (SolidBrush background = new SolidBrush(Color.FromArgb(245, color)))
+                    using (GraphicsPath shape = RoundedRectangle(new Rectangle(4, 4, 120, 120), 28))
+                        graphics.FillPath(background, shape);
+
+                    if (icon == "power")
+                    {
+                        using (Pen pen = new Pen(Color.White, 11F))
+                        {
+                            pen.StartCap = LineCap.Round;
+                            pen.EndCap = LineCap.Round;
+                            graphics.DrawArc(pen, 29, 30, 70, 70, -43, 266);
+                            graphics.DrawLine(pen, 64, 20, 64, 61);
+                        }
+                    }
+                    else
+                    {
+                        Point[] sparkle =
+                        {
+                            new Point(64, 17), new Point(74, 50), new Point(108, 64), new Point(74, 78),
+                            new Point(64, 111), new Point(54, 78), new Point(20, 64), new Point(54, 50)
+                        };
+                        using (SolidBrush foreground = new SolidBrush(Color.White))
+                            graphics.FillPolygon(foreground, sparkle);
+                    }
+                    canvas.Save(memory, ImageFormat.Png);
+                    return memory.ToArray();
+                }
+            }
+            catch { return null; }
         }
 
         private static byte[] IconFromEmbeddedResource(string path, bool skipExecutable)

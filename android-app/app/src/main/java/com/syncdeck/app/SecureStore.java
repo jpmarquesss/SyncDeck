@@ -39,8 +39,10 @@ public final class SecureStore {
             if (value == null) return null;
             String[] parts = value.split("\\.", 2);
             if (parts.length != 2) return null;
+            SecretKey key = getExistingKey();
+            if (key == null) return null;
             Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-            cipher.init(Cipher.DECRYPT_MODE, getOrCreateKey(), new GCMParameterSpec(128, Base64.decode(parts[0], Base64.NO_WRAP)));
+            cipher.init(Cipher.DECRYPT_MODE, key, new GCMParameterSpec(128, Base64.decode(parts[0], Base64.NO_WRAP)));
             byte[] secret = cipher.doFinal(Base64.decode(parts[1], Base64.NO_WRAP));
             return secret.length == 32 ? secret : null;
         } catch (Exception ignored) {
@@ -49,7 +51,7 @@ public final class SecureStore {
     }
 
     public void clear() {
-        preferences.edit().remove(SECRET).apply();
+        preferences.edit().remove(SECRET).commit();
         try {
             KeyStore store = KeyStore.getInstance("AndroidKeyStore");
             store.load(null);
@@ -69,5 +71,11 @@ public final class SecureStore {
                 .setKeySize(256)
                 .build());
         return generator.generateKey();
+    }
+
+    private SecretKey getExistingKey() throws Exception {
+        KeyStore store = KeyStore.getInstance("AndroidKeyStore");
+        store.load(null);
+        return store.containsAlias(KEY_ALIAS) ? (SecretKey) store.getKey(KEY_ALIAS, null) : null;
     }
 }

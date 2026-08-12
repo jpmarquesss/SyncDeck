@@ -40,7 +40,7 @@ namespace SyncDeck.Agent
                 switch (action.Type)
                 {
                     case "app": return LaunchApp(action);
-                    case "url": return LaunchUrl(action.Target, action.Label);
+                    case "url": return LaunchUrl(action);
                     case "path": return LaunchPath(action);
                     case "command": return LaunchCommand(action);
                     case "hotkey": return SendHotkey(action);
@@ -60,16 +60,30 @@ namespace SyncDeck.Agent
             if (TryLaunchStartApp(action.AppNames))
                 return ExecutionResult.Success(action.Label + " foi aberto.");
             if (!string.IsNullOrWhiteSpace(action.FallbackUrl))
-                return LaunchUrl(action.FallbackUrl, action.Label);
+                return LaunchUrl(new ActionDefinition { Target = action.FallbackUrl, Label = action.Label });
             return ExecutionResult.Failure("O aplicativo não foi encontrado. Edite o botão e confira o destino.");
         }
 
-        private ExecutionResult LaunchUrl(string value, string label)
+        private ExecutionResult LaunchUrl(ActionDefinition action)
         {
+            string value = action == null ? string.Empty : action.Target;
+            string label = action == null ? "Site" : action.Label;
             Uri uri;
             if (!Uri.TryCreate(value, UriKind.Absolute, out uri) ||
                 (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
                 return ExecutionResult.Failure("Link inválido.");
+            string browser = action == null ? string.Empty : (action.Arguments ?? string.Empty).Trim();
+            if (string.Equals(browser, "chrome", StringComparison.OrdinalIgnoreCase))
+            {
+                ActionDefinition chrome = new ActionDefinition
+                {
+                    Target = "chrome.exe",
+                    Arguments = uri.AbsoluteUri,
+                    ProcessNames = new[] { "chrome" }
+                };
+                if (TryStart(chrome.Target, ChromeProfileResolver.ArgumentsFor(chrome), string.Empty))
+                    return ExecutionResult.Success(label + " foi aberto no Chrome.");
+            }
             Process.Start(new ProcessStartInfo { FileName = uri.AbsoluteUri, UseShellExecute = true });
             return ExecutionResult.Success(label + " foi aberto.");
         }

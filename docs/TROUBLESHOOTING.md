@@ -19,7 +19,18 @@ Configure o Gradle JDK como 17. O projeto usa Android Gradle Plugin 9 e Java 17.
 
 ## O aplicativo abre e fecha
 
-Abra o Logcat e procure a primeira linha <code>Caused by</code>. A falha conhecida de <code>WindowInsetsController</code> no Android 11 foi corrigida na 0.2.1. Confirme que a versão instalada é 0.3.0 ou superior.
+Abra o Logcat e procure a primeira linha <code>Caused by</code>. A falha conhecida de <code>WindowInsetsController</code> no Android 11 foi corrigida na 0.2.1. Confirme que a versão instalada é 0.3.1 ou superior.
+
+## Precisa parear novamente depois de reiniciar o PC
+
+A partir da versão 0.3.1, o app guarda a impressão digital do agente e procura automaticamente o mesmo PC se o roteador mudar seu IP. A primeira tentativa pode levar até cerca de sete segundos.
+
+1. Atualize o agente do Windows e o APK para 0.3.1.
+2. Instale o APK por cima do atual; não desinstale.
+3. Abra o app uma vez enquanto a conexão atual ainda funciona, para registrar a impressão digital.
+4. Confirme que o agente inicia com o Windows.
+
+O Windows também mantém uma cópia de segurança de <code>clients.json</code>. Se o APK for desinstalado, assinado com outra chave ou os celulares forem revogados no agente, um novo pareamento será necessário.
 
 ## O Android pede endereço privado
 
@@ -50,7 +61,7 @@ Não use IP público, endereço de site ou IP de VPN.
 
 ## O cartão não fica luminoso
 
-- A versão 0.3.0 precisa estar instalada nas duas partes.
+- A versão 0.3.1 precisa estar instalada nas duas partes.
 - O programa precisa possuir uma janela visível; processo em segundo plano não conta.
 - Aguarde cerca de três segundos.
 - Confira o nome do processo sem <code>.exe</code>.
@@ -66,7 +77,7 @@ Não use IP público, endereço de site ou IP de VPN.
 
 ## Chrome mostra seletor de contas
 
-1. Atualize o agente para 0.3.0.
+1. Atualize o agente para 0.3.1.
 2. Abra o perfil desejado manualmente uma vez.
 3. Feche a janela e abra pelo SyncDeck.
 4. Confira se o botão usa <code>chrome.exe</code> e processo <code>chrome</code>.

@@ -17,7 +17,9 @@ namespace SyncDeck.Agent
             "SyncDeck");
         public static readonly string Actions = Path.Combine(Root, "actions.json");
         public static readonly string Clients = Path.Combine(Root, "clients.json");
+        public static readonly string ClientsBackup = Path.Combine(Root, "clients.backup.json");
         public static readonly string Settings = Path.Combine(Root, "settings.json");
+        public static readonly string ActionsMigration031 = Path.Combine(Root, "actions-v0.3.1.migrated");
 
         public static void Ensure()
         {
@@ -37,6 +39,7 @@ namespace SyncDeck.Agent
             {
                 Save(CreateDefaults());
             }
+            Apply031LayoutMigration();
         }
 
         public List<ActionDefinition> Load()
@@ -214,12 +217,59 @@ namespace SyncDeck.Agent
                     Icon = "codex", Color = "#10A37F", Closable = true, Enabled = true
                 },
                 App("calculator", "Calculadora", "calc.exe", new[] { "CalculatorApp", "Calculator" }, new[] { "Calculadora", "Calculator" }, "calculator", "#F59E0B"),
-                new ActionDefinition
-                {
-                    Id = "downloads", Label = "Downloads", Type = "path",
-                    Target = "%USERPROFILE%\\Downloads", ProcessNames = new string[0], AppNames = new string[0],
-                    Icon = "download", Color = "#8B5CF6", Closable = false, Enabled = true
-                }
+                ChatGptWeb(),
+                ShutdownPc()
+            };
+        }
+
+        private void Apply031LayoutMigration()
+        {
+            if (File.Exists(DataPaths.ActionsMigration031)) return;
+            lock (_gate)
+            {
+                List<ActionDefinition> actions = Load();
+                actions.RemoveAll(IsRemovedFrom031Layout);
+                if (!actions.Any(x => string.Equals(x.Id, "chatgpt-web", StringComparison.OrdinalIgnoreCase)))
+                    actions.Add(ChatGptWeb());
+                if (!actions.Any(x => string.Equals(x.Id, "shutdown-pc", StringComparison.OrdinalIgnoreCase)))
+                    actions.Add(ShutdownPc());
+                Save(actions);
+                File.WriteAllText(DataPaths.ActionsMigration031,
+                    "Migração do painel aplicada em " + DateTime.UtcNow.ToString("o"), new UTF8Encoding(false));
+            }
+        }
+
+        private static bool IsRemovedFrom031Layout(ActionDefinition action)
+        {
+            if (action == null) return false;
+            string id = (action.Id ?? string.Empty).Trim();
+            string label = (action.Label ?? string.Empty).Trim();
+            return string.Equals(id, "downloads", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(id, "android-studio", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(id, "android-app", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(label, "Downloads", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(label, "Pasta Downloads", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(label, "Android Studio", StringComparison.OrdinalIgnoreCase) ||
+                   string.Equals(label, "Android App", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static ActionDefinition ChatGptWeb()
+        {
+            return new ActionDefinition
+            {
+                Id = "chatgpt-web", Label = "ChatGPT", Type = "url", Target = "https://chatgpt.com/",
+                Arguments = "chrome", ProcessNames = new string[0], AppNames = new string[0],
+                Icon = "codex", Color = "#10A37F", Confirm = false, Closable = false, Enabled = true
+            };
+        }
+
+        private static ActionDefinition ShutdownPc()
+        {
+            return new ActionDefinition
+            {
+                Id = "shutdown-pc", Label = "Desligar PC", Type = "command", Target = "shutdown.exe",
+                Arguments = "/s /t 5", ProcessNames = new string[0], AppNames = new string[0],
+                Icon = "power", Color = "#EF4444", Confirm = true, Closable = false, Enabled = true
             };
         }
 
@@ -284,6 +334,7 @@ namespace SyncDeck.Agent
             lock (_gate)
             {
                 if (File.Exists(DataPaths.Clients)) File.Delete(DataPaths.Clients);
+                if (File.Exists(DataPaths.ClientsBackup)) File.Delete(DataPaths.ClientsBackup);
             }
         }
 
@@ -291,18 +342,45 @@ namespace SyncDeck.Agent
         {
             lock (_gate)
             {
-                if (!File.Exists(DataPaths.Clients)) return new List<ClientRecord>();
-                try
+                List<ClientRecord> records;
+                if (TryLoadRecords(DataPaths.Clients, out records)) return records;
+                if (TryLoadRecords(DataPaths.ClientsBackup, out records))
                 {
-                    return _json.Deserialize<List<ClientRecord>>(File.ReadAllText(DataPaths.Clients, Encoding.UTF8)) ?? new List<ClientRecord>();
+                    try { SaveRecords(records); } catch { }
+                    return records;
                 }
-                catch { return new List<ClientRecord>(); }
+                return new List<ClientRecord>();
             }
         }
 
         private void SaveRecords(List<ClientRecord> records)
         {
-            File.WriteAllText(DataPaths.Clients, PrettyJson.Serialize(records), new UTF8Encoding(false));
+            string content = PrettyJson.Serialize(records);
+            string temp = DataPaths.Clients + ".tmp";
+            using (FileStream stream = new FileStream(temp, FileMode.Create, FileAccess.Write, FileShare.None))
+            using (StreamWriter writer = new StreamWriter(stream, new UTF8Encoding(false)))
+            {
+                writer.Write(content);
+                writer.Flush();
+                stream.Flush(true);
+            }
+            if (File.Exists(DataPaths.Clients))
+                File.Replace(temp, DataPaths.Clients, DataPaths.ClientsBackup);
+            else
+                File.Move(temp, DataPaths.Clients);
+            File.Copy(DataPaths.Clients, DataPaths.ClientsBackup, true);
+        }
+
+        private bool TryLoadRecords(string path, out List<ClientRecord> records)
+        {
+            records = null;
+            if (!File.Exists(path)) return false;
+            try
+            {
+                records = _json.Deserialize<List<ClientRecord>>(File.ReadAllText(path, Encoding.UTF8));
+                return records != null;
+            }
+            catch { return false; }
         }
     }
 

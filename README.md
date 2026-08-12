@@ -2,7 +2,7 @@
 
 Use um celular Android como um painel Stream Deck para abrir, focar e fechar aplicativos em um PC Windows pela rede local.
 
-**Versão atual:** 0.3.0 · **Licença:** MIT · **Status:** beta funcional
+**Versão atual:** 0.3.1 · **Licença:** MIT · **Status:** beta funcional
 
 > O SyncDeck foi pensado para funcionar sem nuvem: celular e computador se comunicam diretamente pela mesma rede Wi-Fi privada. O projeto não acessa aplicativos bancários, notificações, contatos, câmera, microfone ou arquivos do Android.
 
@@ -33,6 +33,8 @@ Use um celular Android como um painel Stream Deck para abrir, focar e fechar apl
 - Editor de botões no Android e no agente Windows.
 - Agente silencioso na bandeja e inicialização automática opcional.
 - Pareamento autenticado, respostas assinadas e proteção contra repetição.
+- Recupera automaticamente a conexão quando o roteador muda o IP do PC.
+- Inclui botões para abrir o ChatGPT no perfil atual do Chrome e desligar o PC com confirmação.
 - Funciona somente em IPv4 privado/local.
 
 ## Como funciona
@@ -91,6 +93,8 @@ O agente compila para <code>windows-agent/SyncDeckAgent.exe</code>. Esse arquivo
 6. Desative novamente **Instalar apps desconhecidos**.
 
 Para atualizar sem perder o pareamento, gere e assine o APK no mesmo computador/keystore e instale por cima.
+
+Quem já usa a versão anterior deve seguir [ATUALIZAR-PARA-0.3.1.txt](ATUALIZAR-PARA-0.3.1.txt). A atualização aplica uma única vez o novo painel solicitado: remove Android Studio/Android App e Downloads, adiciona ChatGPT no Chrome e Desligar PC.
 
 ### 3. Pareamento
 

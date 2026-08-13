@@ -153,6 +153,7 @@ namespace SyncDeck.Agent
         public ApprovalDialog(string title, string detail, string approveText)
         {
             Text = "SyncDeck — Confirmação de segurança";
+            Icon = BrandResources.ApplicationIcon;
             Width = 650;
             Height = 500;
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -214,7 +215,7 @@ namespace SyncDeck.Agent
                 Size = new Size(120, 42),
                 DialogResult = DialogResult.Yes,
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.FromArgb(32, 153, 105),
+                BackColor = Color.FromArgb(80, 170, 120),
                 ForeColor = Color.White
             };
             _approve.FlatAppearance.BorderSize = 0;

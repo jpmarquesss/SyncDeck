@@ -16,6 +16,7 @@ namespace SyncDeck.Agent
         {
             _store = store;
             Text = "SyncDeck — Editar botões";
+            Icon = BrandResources.ApplicationIcon;
             Width = 650; Height = 510;
             StartPosition = FormStartPosition.CenterScreen;
             BackColor = Color.FromArgb(20, 22, 28);
@@ -126,7 +127,7 @@ namespace SyncDeck.Agent
             {
                 Text = text, Location = new Point(x, y), Size = new Size(130, 38),
                 FlatStyle = FlatStyle.Flat, ForeColor = Color.White,
-                BackColor = primary ? Color.FromArgb(34, 139, 98) : Color.FromArgb(43, 47, 57)
+                BackColor = primary ? Color.FromArgb(80, 170, 120) : Color.FromArgb(43, 47, 57)
             };
             button.FlatAppearance.BorderSize = 0;
             button.Click += click;
@@ -150,6 +151,7 @@ namespace SyncDeck.Agent
         {
             Value = action;
             Text = "SyncDeck — Botão";
+            Icon = BrandResources.ApplicationIcon;
             Width = 610; Height = 650;
             StartPosition = FormStartPosition.CenterParent;
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -224,7 +226,7 @@ namespace SyncDeck.Agent
         }
         private static Button Button(string text, int x, int y, bool primary)
         {
-            Button button = new Button { Text = text, Location = new Point(x, y), Size = new Size(115, 38), FlatStyle = FlatStyle.Flat, ForeColor = Color.White, BackColor = primary ? Color.FromArgb(34, 139, 98) : Color.FromArgb(48, 52, 62) };
+            Button button = new Button { Text = text, Location = new Point(x, y), Size = new Size(115, 38), FlatStyle = FlatStyle.Flat, ForeColor = Color.White, BackColor = primary ? Color.FromArgb(80, 170, 120) : Color.FromArgb(48, 52, 62) };
             button.FlatAppearance.BorderSize = 0; return button;
         }
         private static string[] Split(string value) { return (value ?? string.Empty).Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).ToArray(); }

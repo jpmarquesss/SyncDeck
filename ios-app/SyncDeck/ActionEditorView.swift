@@ -70,7 +70,7 @@ struct ActionEditorView: View {
                 }
 
                 Section("Visual") {
-                    TextField("Cor hexadecimal, por exemplo #58D89B", text: $action.color)
+                    TextField("Cor hexadecimal, por exemplo #72F5AD", text: $action.color)
                         .textInputAutocapitalization(.characters)
                         .disableAutocorrection(true)
                     Picker("Símbolo de reserva", selection: $action.icon) {
@@ -165,7 +165,7 @@ struct ActionEditorView: View {
             throw SyncDeckError.friendly("Informe o nome do botão.")
         }
         guard result.color.range(of: "^#[0-9A-F]{6}$", options: .regularExpression) != nil else {
-            throw SyncDeckError.friendly("Use uma cor no formato #58D89B.")
+            throw SyncDeckError.friendly("Use uma cor no formato #72F5AD.")
         }
         guard !result.target.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             throw SyncDeckError.friendly("Informe o destino que será aberto no Windows.")

@@ -81,7 +81,7 @@ struct SyncAction: Identifiable, Equatable {
         SyncAction(
             id: "acao-\(UUID().uuidString.prefix(8).lowercased())",
             label: "Novo botão",
-            color: "#58D89B"
+            color: "#72F5AD"
         )
     }
 

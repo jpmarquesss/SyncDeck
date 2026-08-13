@@ -18,6 +18,7 @@ namespace SyncDeck.Agent
             _pairing = pairing;
             _port = port;
             Text = "SyncDeck — Parear celular";
+            Icon = BrandResources.ApplicationIcon;
             Width = 500;
             Height = 465;
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -46,7 +47,7 @@ namespace SyncDeck.Agent
 
             AddCaption("CÓDIGO DE 6 DÍGITOS", 272);
             _code = AddValue(_pairing.CurrentCode, 295, 29F);
-            _code.ForeColor = Color.FromArgb(118, 231, 180);
+            _code.ForeColor = Color.FromArgb(114, 245, 173);
 
             _countdown = Label(string.Empty, 9F, FontStyle.Regular);
             _countdown.Location = new Point(32, 355); _countdown.AutoSize = true;

@@ -143,10 +143,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun SyncDeckTheme(content: @Composable () -> Unit) {
     val colors = darkColorScheme(
-        primary = Color(0xFF69E6B0),
+        primary = Color(0xFF72F5AD),
         onPrimary = Color(0xFF071B13),
         secondary = Color(0xFF86AFFF),
-        background = Color(0xFF090B10),
+        background = Color(0xFF070A09),
         surface = Color(0xFF171A23),
         onSurface = Color(0xFFF5F7FB),
         error = Color(0xFFFF7F8D),
@@ -172,7 +172,7 @@ private fun SyncDeckApp(controller: DeckController, setLandscape: (Boolean) -> U
     Box(
         Modifier.fillMaxSize().background(
             Brush.linearGradient(
-                colors = listOf(Color(0xFF080A0F), Color(0xFF111525), Color(0xFF090B11)),
+                colors = listOf(Color(0xFF070A09), Color(0xFF101713), Color(0xFF070A09)),
                 start = androidx.compose.ui.geometry.Offset.Zero,
                 end = androidx.compose.ui.geometry.Offset(1400f, 2200f),
             ),
@@ -235,7 +235,7 @@ private fun AmbientGlow() {
     Box(
         Modifier.fillMaxSize().background(
             Brush.radialGradient(
-                colors = listOf(Color(0xFF45D6A0).copy(alpha = .11f), Color.Transparent),
+                colors = listOf(Color(0xFF50AA78).copy(alpha = .13f), Color.Transparent),
                 center = androidx.compose.ui.geometry.Offset(70f, 120f),
                 radius = 720f,
             ),
@@ -255,9 +255,13 @@ private fun AmbientGlow() {
 @Composable
 private fun Header(pcName: String, onAdd: () -> Unit, onRefresh: () -> Unit, onSettings: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text("SyncDeck", fontSize = 30.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp)
-            Text(pcName, color = Color.White.copy(alpha = .55f), style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
+            SyncDeckBrandMark(Modifier.size(25.dp))
+            Spacer(Modifier.width(9.dp))
+            Column {
+                Text("SyncDeck", fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp)
+                Text(pcName, color = Color.White.copy(alpha = .55f), style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
         }
         HeaderButton("＋", "Adicionar botão", onAdd)
         Spacer(Modifier.width(8.dp))
@@ -265,6 +269,33 @@ private fun Header(pcName: String, onAdd: () -> Unit, onRefresh: () -> Unit, onS
         Spacer(Modifier.width(8.dp))
         HeaderButton("•••", "Conexão", onSettings, compact = true)
     }
+}
+
+@Composable
+private fun SyncDeckBrandMark(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.graphicsLayer { rotationZ = -8f },
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+            BrandTile(Color(0xFF72F5AD))
+            BrandTile(Color(0xFF50AA78))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+            BrandTile(Color(0xFF50AA78))
+            BrandTile(Color(0xFF72F5AD))
+        }
+    }
+}
+
+@Composable
+private fun BrandTile(color: Color) {
+    Box(
+        Modifier
+            .size(11.dp)
+            .clip(RoundedCornerShape(3.5.dp))
+            .background(color),
+    )
 }
 
 @Composable
@@ -288,7 +319,7 @@ private fun HeaderButton(text: String, description: String, onClick: () -> Unit,
 @Composable
 private fun StatusPill(text: String, tone: ConnectionTone, onClick: () -> Unit) {
     val color = when (tone) {
-        ConnectionTone.ONLINE -> Color(0xFF5BE0AB)
+        ConnectionTone.ONLINE -> Color(0xFF72F5AD)
         ConnectionTone.OFFLINE -> Color(0xFFFF8B91)
         ConnectionTone.WORKING -> Color(0xFF80AFFF)
     }

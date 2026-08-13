@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="240" viewBox="0 0 720 240" role="img" aria-labelledby="title description">
+  <title id="title">SyncDeck</title>
+  <desc id="description">Logo do SyncDeck com quatro botões verdes e o nome em branco.</desc>
+  <defs>
+    <radialGradient id="background" cx="18%" cy="50%" r="74%">
+      <stop offset="0" stop-color="#102219"/>
+      <stop offset="0.56" stop-color="#090e0b"/>
+      <stop offset="1" stop-color="#070a09"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="240" rx="36" fill="url(#background)"/>
+  <g transform="rotate(-8 110 120)">
+    <rect x="48" y="58" width="54" height="54" rx="16" fill="#72f5ad"/>
+    <rect x="118" y="58" width="54" height="54" rx="16" fill="#50aa78"/>
+    <rect x="48" y="128" width="54" height="54" rx="16" fill="#50aa78"/>
+    <rect x="118" y="128" width="54" height="54" rx="16" fill="#72f5ad"/>
+  </g>
+  <text x="218" y="145" fill="#f5f8f6" font-family="Inter, Geist, 'Segoe UI', Arial, sans-serif" font-size="76" font-weight="800" letter-spacing="-4">SyncDeck</text>
+</svg>

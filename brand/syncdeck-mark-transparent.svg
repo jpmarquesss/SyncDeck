@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title description">
+  <title id="title">Símbolo do SyncDeck</title>
+  <desc id="description">Quatro botões verdes arredondados.</desc>
+  <g transform="rotate(-8 512 512)">
+    <rect x="205" y="205" width="272" height="272" rx="78" fill="#72f5ad"/>
+    <rect x="547" y="205" width="272" height="272" rx="78" fill="#50aa78"/>
+    <rect x="205" y="547" width="272" height="272" rx="78" fill="#50aa78"/>
+    <rect x="547" y="547" width="272" height="272" rx="78" fill="#72f5ad"/>
+  </g>
+</svg>

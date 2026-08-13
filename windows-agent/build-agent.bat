@@ -14,7 +14,7 @@ if not exist "%CSC%" (
 
 echo Compilando SyncDeck Agent...
 "%CSC%" /nologo /target:winexe /optimize+ /platform:anycpu ^
-  /out:"SyncDeckAgent.exe" /win32manifest:"app.manifest" ^
+  /out:"SyncDeckAgent.exe" /win32manifest:"app.manifest" /win32icon:"assets\syncdeck.ico" ^
   /reference:System.dll /reference:System.Core.dll /reference:System.Drawing.dll ^
   /reference:System.Security.dll /reference:System.Web.Extensions.dll ^
   /reference:System.Windows.Forms.dll src\*.cs

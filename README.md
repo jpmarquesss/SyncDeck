@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="brand/syncdeck-logo.svg" alt="SyncDeck" width="360">
+</p>
+
 # SyncDeck
 
 Transforme um celular Android em um painel moderno para abrir, focar e fechar programas, sites, pastas e comandos no Windows. A comunicação é direta na rede local: não existe conta SyncDeck, servidor em nuvem, anúncio ou telemetria.
@@ -48,7 +52,7 @@ O Windows mantém os botões e executa as ações. O Android mantém apenas o en
 2. Execute `Compilar-e-Iniciar.bat`.
 3. Execute `Instalar-no-Windows.bat` para copiar o agente para `%LOCALAPPDATA%\SyncDeck\Agent` e ativar a inicialização automática.
 4. Execute `Configurar-Firewall.bat` uma vez como administrador. A regra aceita somente perfil privado e sub-rede local.
-5. Procure o escudo do SyncDeck próximo ao relógio do Windows.
+5. Procure o símbolo verde do SyncDeck próximo ao relógio do Windows.
 
 O código não inclui um executável pronto no Git. O workflow do GitHub compila o agente e disponibiliza um artefato para testes. Antes de distribuir publicamente, assine o executável com um certificado de assinatura de código.
 
@@ -157,6 +161,7 @@ A pasta `ios-app` preserva o cliente SwiftUI 0.5.0 para iOS 15 e iPhone 11 Pro. 
 - `android-app/`: Kotlin, Jetpack Compose, Gradle e recursos Android.
 - `windows-agent/`: agente C#, catálogo de programas, aprovação e integração Win32.
 - `ios-app/`: cliente SwiftUI experimental.
+- `brand/`: logo, símbolo e guia de identidade visual oficial.
 - `tests/`: vetores determinísticos do protocolo.
 - `scripts/`: validação, build e empacotamento.
 - `docs/`: arquitetura, protocolo, ações, testes, releases e publicação.

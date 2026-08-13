@@ -98,10 +98,11 @@ struct ContentView: View {
 
     private var header: some View {
         VStack(spacing: 10) {
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: 8) {
+                SyncDeckMark(size: 24)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("SyncDeck")
-                        .font(.system(size: 30, weight: .bold, design: .rounded))
+                        .font(.system(size: 27, weight: .bold, design: .rounded))
                     Text(model.computerName)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -192,6 +193,32 @@ struct ContentView: View {
     private var multipleCloseTitle: String {
         guard let action = model.multipleCloseAction else { return "Janelas abertas" }
         return "\(action.windowCount) janelas abertas"
+    }
+}
+
+private struct SyncDeckMark: View {
+    let size: CGFloat
+
+    var body: some View {
+        VStack(spacing: size * 0.12) {
+            HStack(spacing: size * 0.12) {
+                tile(Color(red: 114.0 / 255.0, green: 245.0 / 255.0, blue: 173.0 / 255.0))
+                tile(Color(red: 80.0 / 255.0, green: 170.0 / 255.0, blue: 120.0 / 255.0))
+            }
+            HStack(spacing: size * 0.12) {
+                tile(Color(red: 80.0 / 255.0, green: 170.0 / 255.0, blue: 120.0 / 255.0))
+                tile(Color(red: 114.0 / 255.0, green: 245.0 / 255.0, blue: 173.0 / 255.0))
+            }
+        }
+        .rotationEffect(.degrees(-8))
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
+    }
+
+    private func tile(_ color: Color) -> some View {
+        RoundedRectangle(cornerRadius: size * 0.13, style: .continuous)
+            .fill(color)
+            .frame(width: size * 0.44, height: size * 0.44)
     }
 }
 

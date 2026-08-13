@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#0B0C0F</color>
+    <color name="background">#070A09</color>
     <color name="surface">#1A1C22</color>
     <color name="text_primary">#F7F7F8</color>
     <color name="text_secondary">#9297A3</color>
-    <color name="accent">#58D89B</color>
-    <color name="launcher_background">#0B1019</color>
+    <color name="accent">#72F5AD</color>
+    <color name="launcher_background">#070A09</color>
 </resources>

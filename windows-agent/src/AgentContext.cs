@@ -45,7 +45,7 @@ namespace SyncDeck.Agent
 
             _tray = new NotifyIcon
             {
-                Icon = SystemIcons.Shield,
+                Icon = BrandResources.ApplicationIcon,
                 Text = "SyncDeck — agente conectado",
                 Visible = true,
                 ContextMenuStrip = menu

@@ -122,7 +122,7 @@ namespace SyncDeck.Agent
                 WriteResponse(stream, 200, Success(new
                 {
                     name = Environment.MachineName,
-                    version = "1.0.0",
+                    version = "1.0.1",
                     serverTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                     pairedDevices = _clients.Count,
                     security = new { protocol = 2, encryptedPayloads = true, desktopApproval = true },

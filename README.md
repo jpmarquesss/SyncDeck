@@ -6,13 +6,13 @@
 
 Transforme um celular Android em um painel moderno para abrir, focar e fechar programas, sites, pastas e comandos no Windows. A comunicação é direta na rede local: não existe conta SyncDeck, servidor em nuvem, anúncio ou telemetria.
 
-**Versão:** 1.0.0 · **Licença:** MIT · **Android:** Kotlin + Jetpack Compose · **Windows:** C#/.NET Framework 4.8
+**Versão:** 1.0.1 · **Licença:** MIT · **Android:** Kotlin + Jetpack Compose · **Windows:** C#/.NET Framework 4.8
 
-> O aplicativo Android 1.0.0 está estruturado para publicação pública na Play Store. A publicação ainda exige uma conta de desenvolvedor, uma chave de upload, materiais da loja e os testes do proprietário descritos em [Publicar na Play Store](docs/PLAY-STORE.md).
+> O aplicativo Android 1.0.1 está estruturado para publicação pública na Play Store. A publicação ainda exige uma conta de desenvolvedor, uma chave de upload, materiais da loja e os testes do proprietário descritos em [Publicar na Play Store](docs/PLAY-STORE.md).
 
 ## Destaques
 
-- Painel retrato em duas colunas e paisagem em tela cheia com três colunas e somente logos.
+- Grade ajustável: 2–4 botões por linha em retrato e 3–6 em paisagem, que continua em tela cheia e somente com logos.
 - Ícones reais extraídos automaticamente dos programas instalados no PC.
 - Janela aberta destacada por contorno luminoso e quantidade de janelas detectada em tempo real.
 - Toque para abrir ou trazer para frente; toque longo para editar; fechamento de uma ou todas as janelas.
@@ -64,7 +64,7 @@ O código não inclui um executável pronto no Git. O workflow do GitHub compila
 4. Instale `android-app/SyncDeck.apk` no aparelho.
 5. Desative novamente **Instalar apps desconhecidos** depois da instalação manual.
 
-Para migrar de uma versão anterior, leia [ATUALIZAR-PARA-1.0.0.txt](ATUALIZAR-PARA-1.0.0.txt).
+Para migrar de uma versão anterior, leia [ATUALIZAR-PARA-1.0.1.txt](ATUALIZAR-PARA-1.0.1.txt).
 
 ### 3. Pareamento
 
@@ -98,7 +98,7 @@ O passo final permite revisar o nome, a cor, a detecção da janela e a confirma
 | Toque longo | Abre ações e edição |
 | `＋` | Abre o assistente de novo botão |
 | `↻` | Atualiza PC, botões, ícones e estados |
-| `•••` | Conexão, pareamento e revogação local |
+| `•••` | Aparência da grade, conexão, pareamento e revogação local |
 | Ligar PC | Envia Magic Packet local após confirmação |
 
 ## Segurança e privacidade
@@ -126,7 +126,7 @@ Consulte [Segurança](SECURITY.md), [Política de privacidade](PRIVACY-POLICY.md
 
 O projeto já inclui:
 
-- `targetSdk 36`, `versionCode 10` e pacote `com.syncdeck.app`;
+- `targetSdk 36`, `versionCode 11` e pacote `com.syncdeck.app`;
 - build de release com R8 e redução de recursos;
 - suporte opcional a chave de upload em `keystore.properties`;
 - `Gerar-AAB.bat` para criar o Android App Bundle;
@@ -154,7 +154,7 @@ O Android usa AGP 9.0.1, Kotlin 2.2.10, Jetpack Compose e Java 17. O agente usa 
 
 ## Aplicativo iOS experimental
 
-A pasta `ios-app` preserva o cliente SwiftUI 0.5.0 para iOS 15 e iPhone 11 Pro. Ele pode ser compilado pelo GitHub sem assinatura e instalado pelo Windows com uma assinatura pessoal, conforme [INSTALAR-NO-IPHONE.txt](INSTALAR-NO-IPHONE.txt). O foco de publicação 1.0.0 é o aplicativo Android; o cliente iOS ainda não é uma distribuição oficial da App Store.
+A pasta `ios-app` preserva o cliente SwiftUI 0.5.0 para iOS 15 e iPhone 11 Pro. Ele pode ser compilado pelo GitHub sem assinatura e instalado pelo Windows com uma assinatura pessoal, conforme [INSTALAR-NO-IPHONE.txt](INSTALAR-NO-IPHONE.txt). O foco de publicação 1.0.1 é o aplicativo Android; o cliente iOS ainda não é uma distribuição oficial da App Store.
 
 ## Estrutura
 

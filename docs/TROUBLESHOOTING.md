@@ -5,7 +5,7 @@
 1. No Android Studio, selecione o aparelho e abra **Logcat**.
 2. Filtre por `package:com.syncdeck.app level:ERROR`.
 3. Procure a primeira linha `Caused by` e abra o arquivo/linha apontado.
-4. Confirme que instalou o APK 1.0.0 gerado do código atual.
+4. Confirme que instalou o APK 1.0.1 gerado do código atual.
 
 Se veio de uma versão antiga assinada por outra chave, desinstale antes de instalar. Isso apaga o pareamento apenas do celular; o agente preserva seus botões.
 
@@ -68,7 +68,7 @@ O Android guarda o segredo no Keystore e o agente mantém uma cópia DPAPI com b
 
 Se ainda falhar:
 
-1. confirme que Android e agente são 1.0.0;
+1. confirme que Android e agente são 1.0.1;
 2. não limpe dados do app nem use otimizador que apague armazenamento;
 3. confira se `%LOCALAPPDATA%\SyncDeck\clients.json` e `clients.backup.json` existem;
 4. use o instalador permanente do agente;

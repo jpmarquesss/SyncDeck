@@ -25,7 +25,7 @@ ADICIONE BOTÕES SEM COMPLICAÇÃO
 Escolha entre Programa, Site, Pasta ou arquivo e Comando. Os programas instalados são listados pelo próprio PC e os ícones são carregados automaticamente. Para pastas e arquivos, a seleção acontece em uma janela do Windows, sem precisar digitar caminhos.
 
 PAINEL MODERNO
-Use duas colunas no modo retrato ou gire o celular para um painel em tela cheia com três colunas e somente logos. Aplicativos abertos recebem um contorno luminoso e o estado das janelas é atualizado automaticamente.
+Escolha quantos botões aparecem por linha: de duas a quatro colunas no modo retrato e de três a seis no painel paisagem com somente logos. Aplicativos abertos recebem um contorno luminoso e o estado das janelas é atualizado automaticamente.
 
 CONTROLE LOCAL E PRIVADO
 O SyncDeck não possui conta, anúncios, rastreamento ou nuvem. Celular e computador se comunicam diretamente na mesma rede privada. O pareamento usa código temporário, chave protegida no aparelho e conferência visual da impressão digital.
@@ -55,13 +55,22 @@ O SyncDeck exige a instalação gratuita do SyncDeck Agent em um PC com Windows 
 | Ordem | Tela | Legenda opcional |
 |---:|---|---|
 | 1 | Painel retrato conectado | Seu PC em um toque |
-| 2 | Painel paisagem com três colunas | Vire o celular e use só os logos |
+| 2 | Painel paisagem com grade ajustável | Vire o celular e use só os logos |
 | 3 | Escolha Programa/Site/Pasta/Comando | Adicione botões sem decorar caminhos |
 | 4 | Lista de programas do Windows | Programas e imagens encontrados automaticamente |
 | 5 | Contorno de app aberto | Saiba o que já está aberto |
 | 6 | Confirmação de segurança no PC | Comandos sensíveis precisam da sua aprovação |
 
 Use dados fictícios nas imagens. Não mostre IP, MAC, códigos, e-mails, notificações ou aplicativos bancários.
+
+## Notas da versão 1.0.1
+
+```text
+• Textos mais claros e legíveis em todas as telas do tema escuro
+• Escolha de 2–4 botões por linha em retrato e 3–6 em paisagem
+• Grade, ícones e espaçamentos adaptados automaticamente ao tamanho escolhido
+• Preferência visual salva no celular
+```
 
 ## Notas da versão 1.0.0
 

@@ -90,6 +90,7 @@ fun ActionWizard(
                 .widthIn(max = 760.dp),
             shape = RoundedCornerShape(30.dp),
             color = Color(0xF51A1D26),
+            contentColor = MaterialTheme.colorScheme.onSurface,
             tonalElevation = 8.dp,
             shadowElevation = 22.dp,
         ) {
@@ -222,6 +223,7 @@ private fun TypePage(onSelect: (ActionKind) -> Unit) {
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).clickable { onSelect(kind) },
                 shape = RoundedCornerShape(22.dp),
                 color = Color.White.copy(alpha = .055f),
+                contentColor = MaterialTheme.colorScheme.onSurface,
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = .08f)),
             ) {
                 Row(Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -283,6 +285,7 @@ private fun ProgramPage(
                     modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).clickable { onSelect(app) },
                     shape = RoundedCornerShape(18.dp),
                     color = Color.White.copy(alpha = .05f),
+                    contentColor = MaterialTheme.colorScheme.onSurface,
                 ) {
                     Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                         Box(Modifier.size(42.dp).background(Color(0xFF65A8FF).copy(alpha = .16f), RoundedCornerShape(13.dp)), contentAlignment = Alignment.Center) {
@@ -518,7 +521,12 @@ private fun DetailsPage(
 
 @Composable
 private fun ReadOnlyDestination(draft: SyncAction) {
-    Surface(shape = RoundedCornerShape(18.dp), color = Color.White.copy(alpha = .05f), modifier = Modifier.fillMaxWidth()) {
+    Surface(
+        shape = RoundedCornerShape(18.dp),
+        color = Color.White.copy(alpha = .05f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Column(Modifier.padding(16.dp)) {
             Text(if (draft.type == "app") "Programa escolhido" else "Local escolhido no PC", color = Color.White.copy(alpha = .55f), style = MaterialTheme.typography.labelMedium)
             Text(draft.label.ifBlank { draft.target }, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 3.dp))
@@ -532,6 +540,7 @@ private fun SecurityPanel() {
     Surface(
         shape = RoundedCornerShape(18.dp),
         color = Color(0xFFAE6AF7).copy(alpha = .1f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE98BFF).copy(alpha = .24f)),
     ) {
         Column(Modifier.padding(15.dp)) {

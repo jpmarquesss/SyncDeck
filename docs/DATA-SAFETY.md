@@ -1,6 +1,6 @@
 # Modelo de Data Safety
 
-Este documento ajuda a preencher o formulário da Google Play para o código 1.0.0 atual. Ele não substitui a responsabilidade do proprietário da conta: revise novamente se adicionar analytics, anúncios, crash reporting, login, servidor, suporte embutido ou novas bibliotecas.
+Este documento ajuda a preencher o formulário da Google Play para o código 1.0.1 atual. Ele não substitui a responsabilidade do proprietário da conta: revise novamente se adicionar analytics, anúncios, crash reporting, login, servidor, suporte embutido ou novas bibliotecas.
 
 ## Respostas propostas
 

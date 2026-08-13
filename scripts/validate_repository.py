@@ -42,7 +42,8 @@ def encode_base64_url(value: bytes) -> str:
 def require_files() -> None:
     required = [
         "README.md", "VERSION", "LICENSE", "CHANGELOG.md",
-        "ATUALIZAR-PARA-1.0.0.txt", "PRIVACY-POLICY.md", "INSTALAR-NO-IPHONE.txt",
+        "ATUALIZAR-PARA-1.0.0.txt", "ATUALIZAR-PARA-1.0.1.txt",
+        "PRIVACY-POLICY.md", "INSTALAR-NO-IPHONE.txt",
         "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md", "SUPPORT.md",
         "ROADMAP.md", "REPOSITORY-SETUP.md", ".editorconfig", ".gitattributes",
         ".gitignore", ".github/workflows/build.yml", ".github/dependabot.yml",
@@ -306,7 +307,9 @@ def validate_source_invariants() -> None:
         fail("A migração Android para Kotlin está incompleta: ainda existem fontes Java.")
     android_requirements = {
         "Compose em MainActivity": "setContent" in main and "SyncDeckApp" in main,
-        "layout 2/3 colunas": "GridCells.Fixed(if (landscape) 3 else 2)" in main,
+        "grade configurável por orientação": all(value in main for value in [
+            "GridCells.Fixed(columns)", "GridPreferences", "portraitColumns", "landscapeColumns",
+        ]),
         "menu por toque longo": "onLongClick" in main,
         "contorno de estado aberto": "action.isOpen" in main and "BorderStroke" in main,
         "assistente de quatro tipos": all(value in wizard for value in ['"app"', '"url"', '"path"', '"command"']),

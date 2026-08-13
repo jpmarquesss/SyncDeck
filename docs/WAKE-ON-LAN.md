@@ -1,6 +1,6 @@
 # Wake-on-LAN
 
-O SyncDeck Android 1.0.0 e o cliente iOS experimental podem enviar um pacote mágico pelo Wi-Fi para a placa Ethernet do PC. Isso permite ligar um computador no estado **S5 (desligamento normal)**, desde que placa-mãe, firmware, placa de rede e fonte mantenham o circuito de rede energizado.
+O SyncDeck Android 1.0.1 e o cliente iOS experimental podem enviar um pacote mágico pelo Wi-Fi para a placa Ethernet do PC. Isso permite ligar um computador no estado **S5 (desligamento normal)**, desde que placa-mãe, firmware, placa de rede e fonte mantenham o circuito de rede energizado.
 
 Não é possível ligar por software quando o computador está sem energia, a fonte está desligada ou o cabo de força foi removido. Esse estado físico é chamado G3.
 
@@ -8,14 +8,14 @@ Não é possível ligar por software quando o computador está sem energia, a fo
 
 - PC conectado ao roteador por cabo Ethernet.
 - Android conectado ao Wi-Fi do mesmo roteador e fora de uma rede de convidados.
-- Agente Windows 1.0.0 e Android 1.0.0; no iPhone, cliente experimental compatível.
+- Agente Windows 1.0.1 e Android 1.0.1; no iPhone, cliente experimental compatível.
 - Placa Ethernet com suporte a Magic Packet.
 
 O resultado de <code>powercfg /devicequery wake_from_any</code> contendo **Realtek PCIe GbE Family Controller** é um bom sinal: o Windows reconhece a placa como capaz de acordar o sistema em algum estado. Isso não garante sozinho o despertar a partir de S5; a BIOS ainda precisa oferecer e manter PME/Wake-on-LAN durante o desligamento.
 
 ## 1. Salvar a placa no celular
 
-1. Ligue o PC e inicie o agente SyncDeck 1.0.0.
+1. Ligue o PC e inicie o agente SyncDeck 1.0.1.
 2. Abra o app já pareado no Android ou iPhone.
 3. Toque em <code>↻</code> e aguarde **Conectado ao PC**.
 4. Confirme que o botão **Ligar PC** apareceu.
@@ -96,7 +96,7 @@ powercfg /lastwake
 
 | Sintoma | Causa mais provável | O que verificar |
 |---|---|---|
-| Botão Ligar PC não aparece | Configuração ainda não sincronizada | Ligue o PC, atualize agente e Android para 1.0.0 e toque em <code>↻</code> |
+| Botão Ligar PC não aparece | Configuração ainda não sincronizada | Ligue o PC, atualize agente e Android para 1.0.1 e toque em <code>↻</code> |
 | LED Ethernet apaga ao desligar | Energia de espera cortada | Wake/PME na BIOS, ErP/Deep Sleep e opção Shutdown Wake-On-Lan |
 | Acorda da suspensão, mas não desligado | S5 bloqueado | Inicialização Rápida, Wake From S5 e suporte real da placa-mãe |
 | Sinal é enviado, mas nada acontece | Broadcast isolado ou NIC desarmada | Mesmo roteador, Wi-Fi normal, cabo, driver e <code>wake_armed</code> |

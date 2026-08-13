@@ -1,6 +1,6 @@
 # Protocolo local
 
-Este documento descreve o protocolo 2 do SyncDeck Android/agente Windows 1.0.0. Ele não é uma API para exposição na internet.
+Este documento descreve o protocolo 2 do SyncDeck Android/agente Windows 1.0.1. Ele não é uma API para exposição na internet.
 
 ## Transporte e limites
 

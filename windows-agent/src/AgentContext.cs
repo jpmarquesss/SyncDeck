@@ -115,7 +115,7 @@ namespace SyncDeck.Agent
             string addresses = ips.Length == 0 ? "Nenhum IP local encontrado" :
                 string.Join(Environment.NewLine, ips.Select(x => x + ":" + _settings.Port));
             MessageBox.Show(
-                "Agente: conectado — versão 1.0.0\n" +
+                "Agente: conectado — versão 1.0.1\n" +
                 "Celulares pareados: " + _clients.Count + "\n\n" +
                 "Endereço para o aplicativo:\n" + addresses + "\n\n" +
                 "A conexão aceita somente endereços da rede local.",

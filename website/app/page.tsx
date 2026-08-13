@@ -269,7 +269,7 @@ export default function Home() {
         <div className="hero-copy">
           <div className="version-badge">
             <i />
-            SyncDeck 1.0.0 disponível
+            SyncDeck 1.0.1 disponível
           </div>
           <h1>
             Seu PC, a um
@@ -561,7 +561,7 @@ export default function Home() {
 
       <section className="final-cta">
         <div className="section-shell final-cta-inner">
-          <span className="version-badge"><i /> Versão 1.0.0</span>
+          <span className="version-badge"><i /> Versão 1.0.1</span>
           <h2>Seu fluxo, agora<br />a um toque.</h2>
           <p>Baixe o SyncDeck, conecte seu celular e transforme tarefas repetitivas em botões.</p>
           <div className="hero-actions">

@@ -51,8 +51,8 @@ Não publique a chave de upload. Veja [PLAY-STORE.md](PLAY-STORE.md) para o proc
 Depois de confirmar o commit exato:
 
 ```powershell
-git tag -a v1.0.0 -m "SyncDeck 1.0.0"
-git push origin v1.0.0
+git tag -a v1.0.1 -m "SyncDeck 1.0.1"
+git push origin v1.0.1
 ```
 
 Para uma versão futura, substitua o número em todos os locais e na tag.

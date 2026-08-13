@@ -33,7 +33,7 @@ O HTTP/1.1 é somente a moldura de transporte local. No cliente Android 1.0, tod
 | `Security.kt` | Android Keystore, AES-GCM local, HMAC e cifra do protocolo 2 |
 | `Models.kt` | Modelos imutáveis e conversão JSON |
 
-A interface usa Kotlin e Jetpack Compose. Em retrato, o painel tem duas colunas; em paisagem, usa três colunas, oculta o cabeçalho e mostra somente logos. O toque longo abre o menu do cartão.
+A interface usa Kotlin e Jetpack Compose. A pessoa escolhe entre 2–4 colunas em retrato e 3–6 em paisagem; o modo paisagem oculta o cabeçalho e mostra somente logos. O toque longo abre o menu do cartão.
 
 `DeckController` é a fronteira entre UI e rede. Callbacks do `ApiClient` retornam ao thread principal antes de alterar o estado Compose. Operações de disco, rede e criptografia não são executadas no thread da interface.
 

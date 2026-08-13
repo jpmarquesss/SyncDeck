@@ -1,6 +1,6 @@
 # Publicar o SyncDeck na Google Play
 
-Este roteiro parte de uma publicação pública para qualquer pessoa. O app Android está configurado como `com.syncdeck.app`, versão `1.0.0`, `versionCode 10`, `targetSdk 36` e formato Android App Bundle.
+Este roteiro parte de uma publicação pública para qualquer pessoa. O app Android está configurado como `com.syncdeck.app`, versão `1.0.1`, `versionCode 11`, `targetSdk 36` e formato Android App Bundle.
 
 ## 1. Decisões permanentes
 

@@ -1,0 +1,27 @@
+SYNCDECK 1.0.1 — ATUALIZAÇÃO
+========================================
+
+O QUE MUDOU
+
+- Corrigidos os nomes que apareciam pretos no tema escuro.
+- Agora você escolhe quantos botões aparecem por linha.
+- Em pé: 2, 3 ou 4 botões por linha.
+- Deitado: 3, 4, 5 ou 6 botões por linha.
+- O modo deitado passa a usar 4 por linha na primeira instalação.
+
+COMO ATUALIZAR O ANDROID
+
+1. Gere ou baixe o APK 1.0.1.
+2. Abra o APK no celular.
+3. Toque em Atualizar; não desinstale a versão anterior.
+4. Abra o SyncDeck e toque em ••• > Aparência.
+5. Escolha a grade que ficar melhor no seu aparelho e toque em Pronto.
+
+O pareamento, os botões e as configurações existentes são preservados ao
+instalar por cima, desde que o APK use a mesma assinatura da versão anterior.
+
+AGENTE DO WINDOWS
+
+Atualize também o agente para 1.0.1 quando gerar o pacote completo. O protocolo
+continua compatível com a versão anterior, mas manter os dois componentes na
+mesma versão facilita o suporte e o diagnóstico.

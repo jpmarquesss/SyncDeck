@@ -2,6 +2,19 @@
 
 Todas as mudanças relevantes do SyncDeck são registradas neste arquivo. O projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.0.1] - 2026-08-13
+
+### Adicionado
+
+- Ajuste visual para escolher separadamente entre 2–4 botões por linha no modo retrato e 3–6 no modo paisagem.
+- Prévia simples da grade e salvamento automático da preferência no celular.
+
+### Corrigido
+
+- Textos que herdavam a cor preta em cartões, cabeçalho, assistente de novos botões e janelas sobre o tema escuro.
+- Cartões grandes demais no modo paisagem; a nova instalação passa a usar quatro botões por linha nesse modo.
+- Tamanhos de ícone, texto, espaçamento e botão de fechar agora se adaptam à densidade escolhida.
+
 ## [1.0.0] - 2026-08-12
 
 ### Adicionado

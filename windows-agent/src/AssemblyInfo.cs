@@ -4,5 +4,5 @@ using System.Reflection;
 [assembly: AssemblyDescription("Agente local e seguro do SyncDeck para Windows")]
 [assembly: AssemblyCompany("SyncDeck")]
 [assembly: AssemblyProduct("SyncDeck")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyFileVersion("1.0.1.0")]

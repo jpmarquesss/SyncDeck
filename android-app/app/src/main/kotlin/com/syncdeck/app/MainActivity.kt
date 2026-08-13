@@ -1,7 +1,11 @@
-@file:OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
+@file:OptIn(
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+    androidx.compose.material3.ExperimentalMaterial3Api::class,
+)
 
 package com.syncdeck.app
 
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
@@ -45,6 +49,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -75,6 +80,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -146,18 +152,35 @@ private fun SyncDeckTheme(content: @Composable () -> Unit) {
         primary = Color(0xFF72F5AD),
         onPrimary = Color(0xFF071B13),
         secondary = Color(0xFF86AFFF),
+        onSecondary = Color(0xFF07131F),
         background = Color(0xFF070A09),
+        onBackground = Color(0xFFF5F7FB),
         surface = Color(0xFF171A23),
         onSurface = Color(0xFFF5F7FB),
+        surfaceVariant = Color(0xFF242936),
+        onSurfaceVariant = Color(0xFFDDE3ED),
         error = Color(0xFFFF7F8D),
     )
-    MaterialTheme(colorScheme = colors, typography = Typography(), content = content)
+    MaterialTheme(colorScheme = colors, typography = Typography()) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = colors.background,
+            contentColor = colors.onBackground,
+        ) {
+            content()
+        }
+    }
 }
 
 @Composable
 private fun SyncDeckApp(controller: DeckController, setLandscape: (Boolean) -> Unit) {
     val state by controller.state
     val landscape = LocalConfiguration.current.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+    val context = LocalContext.current
+    val gridPreferences = remember(context) { GridPreferences(context) }
+    var portraitColumns by remember { mutableStateOf(gridPreferences.portraitColumns) }
+    var landscapeColumns by remember { mutableStateOf(gridPreferences.landscapeColumns) }
+    var showSettings by remember { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
 
     LaunchedEffect(landscape) { setLandscape(landscape) }
@@ -181,6 +204,7 @@ private fun SyncDeckApp(controller: DeckController, setLandscape: (Boolean) -> U
         AmbientGlow()
         Scaffold(
             containerColor = Color.Transparent,
+            contentColor = MaterialTheme.colorScheme.onBackground,
             snackbarHost = { SnackbarHost(snackbar, modifier = Modifier.padding(12.dp)) },
         ) { insets ->
             Column(
@@ -196,7 +220,7 @@ private fun SyncDeckApp(controller: DeckController, setLandscape: (Boolean) -> U
                         pcName = state.pcName,
                         onAdd = controller::showAddWizard,
                         onRefresh = controller::refresh,
-                        onSettings = controller::showConnection,
+                        onSettings = { showSettings = true },
                     )
                     StatusPill(state.status, state.tone, controller::refresh)
                     Spacer(Modifier.height(13.dp))
@@ -205,6 +229,7 @@ private fun SyncDeckApp(controller: DeckController, setLandscape: (Boolean) -> U
                     actions = state.actions,
                     busy = state.busyActionIds,
                     landscape = landscape,
+                    columns = if (landscape) landscapeColumns else portraitColumns,
                     onOpen = controller::requestOpen,
                     onClose = controller::requestClose,
                     onMenu = controller::openMenu,
@@ -226,8 +251,160 @@ private fun SyncDeckApp(controller: DeckController, setLandscape: (Boolean) -> U
     state.pendingClose?.let { action -> CloseConfirmation(action, controller::dismissClose, controller::confirmClose) }
     state.menuAction?.let { action -> ActionMenu(action, controller) }
     state.pendingDelete?.let { action -> DeleteConfirmation(action, controller::dismissDelete, controller::confirmDelete) }
+    if (showSettings) {
+        LayoutSettingsDialog(
+            portraitColumns = portraitColumns,
+            landscapeColumns = landscapeColumns,
+            onPortraitColumns = { value ->
+                portraitColumns = value
+                gridPreferences.portraitColumns = value
+            },
+            onLandscapeColumns = { value ->
+                landscapeColumns = value
+                gridPreferences.landscapeColumns = value
+            },
+            onConnection = {
+                showSettings = false
+                controller.showConnection()
+            },
+            onDismiss = { showSettings = false },
+        )
+    }
     if (state.showConnection) ConnectionDialog(controller, controller::hideConnection)
     if (state.showWizard) ActionWizard(controller, state.editingAction, controller::hideWizard)
+}
+
+@Composable
+private fun LayoutSettingsDialog(
+    portraitColumns: Int,
+    landscapeColumns: Int,
+    onPortraitColumns: (Int) -> Unit,
+    onLandscapeColumns: (Int) -> Unit,
+    onConnection: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(.94f).widthIn(max = 620.dp),
+            shape = RoundedCornerShape(30.dp),
+            color = Color(0xFA191C25),
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            shadowElevation = 24.dp,
+        ) {
+            Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(15.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Aparência", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                        Text("Ajuste o tamanho dos botões", color = Color.White.copy(alpha = .56f))
+                    }
+                    TextButton(onClick = onDismiss) { Text("Fechar") }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(17.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = .08f),
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ) {
+                    Text(
+                        "Escolha quantos botões aparecem em cada linha. Mais colunas deixam os botões menores.",
+                        modifier = Modifier.padding(14.dp),
+                        color = Color.White.copy(alpha = .72f),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
+
+                ColumnCountPicker(
+                    title = "Celular em pé",
+                    description = "$portraitColumns botões por linha",
+                    selected = portraitColumns,
+                    values = 2..4,
+                    onSelect = onPortraitColumns,
+                )
+                ColumnCountPicker(
+                    title = "Celular deitado",
+                    description = "$landscapeColumns botões por linha",
+                    selected = landscapeColumns,
+                    values = 3..6,
+                    onSelect = onLandscapeColumns,
+                )
+
+                Text(
+                    "A escolha fica salva neste celular e é aplicada automaticamente ao girar a tela.",
+                    color = Color.White.copy(alpha = .48f),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedButton(onClick = onConnection, modifier = Modifier.weight(1f)) {
+                        Text("Conexão com o PC")
+                    }
+                    Button(onClick = onDismiss, modifier = Modifier.weight(1f)) {
+                        Text("Pronto")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ColumnCountPicker(
+    title: String,
+    description: String,
+    selected: Int,
+    values: IntRange,
+    onSelect: (Int) -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = Color.White.copy(alpha = .045f),
+        contentColor = MaterialTheme.colorScheme.onSurface,
+        border = BorderStroke(1.dp, Color.White.copy(alpha = .075f)),
+    ) {
+        Column(Modifier.padding(15.dp)) {
+            Text(title, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+            Text(description, color = Color.White.copy(alpha = .52f), style = MaterialTheme.typography.bodySmall)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                values.forEach { value ->
+                    FilterChip(
+                        modifier = Modifier.weight(1f),
+                        selected = selected == value,
+                        onClick = { onSelect(value) },
+                        label = { Text(value.toString(), fontWeight = FontWeight.Bold) },
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top = 13.dp),
+                horizontalArrangement = Arrangement.spacedBy(5.dp),
+            ) {
+                repeat(selected) {
+                    Box(
+                        Modifier
+                            .weight(1f)
+                            .height(18.dp)
+                            .background(
+                                Brush.linearGradient(
+                                    listOf(
+                                        MaterialTheme.colorScheme.primary.copy(alpha = .28f),
+                                        MaterialTheme.colorScheme.secondary.copy(alpha = .18f),
+                                    ),
+                                ),
+                                RoundedCornerShape(6.dp),
+                            )
+                            .border(1.dp, Color.White.copy(alpha = .08f), RoundedCornerShape(6.dp)),
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -259,7 +436,7 @@ private fun Header(pcName: String, onAdd: () -> Unit, onRefresh: () -> Unit, onS
             SyncDeckBrandMark(Modifier.size(25.dp))
             Spacer(Modifier.width(9.dp))
             Column {
-                Text("SyncDeck", fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp)
+                Text("SyncDeck", color = Color.White, fontSize = 27.sp, fontWeight = FontWeight.ExtraBold, letterSpacing = (-1).sp)
                 Text(pcName, color = Color.White.copy(alpha = .55f), style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
@@ -267,7 +444,7 @@ private fun Header(pcName: String, onAdd: () -> Unit, onRefresh: () -> Unit, onS
         Spacer(Modifier.width(8.dp))
         HeaderButton("↻", "Atualizar", onRefresh)
         Spacer(Modifier.width(8.dp))
-        HeaderButton("•••", "Conexão", onSettings, compact = true)
+        HeaderButton("•••", "Ajustes", onSettings, compact = true)
     }
 }
 
@@ -308,6 +485,7 @@ private fun HeaderButton(text: String, description: String, onClick: () -> Unit,
             .combinedClickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
         color = Color.White.copy(alpha = .065f),
+        contentColor = Color.White,
         border = BorderStroke(1.dp, Color.White.copy(alpha = .09f)),
     ) {
         Box(contentAlignment = Alignment.Center) {
@@ -341,6 +519,7 @@ private fun DeckGrid(
     actions: List<SyncAction>,
     busy: Set<String>,
     landscape: Boolean,
+    columns: Int,
     onOpen: (SyncAction) -> Unit,
     onClose: (SyncAction) -> Unit,
     onMenu: (SyncAction) -> Unit,
@@ -357,17 +536,25 @@ private fun DeckGrid(
         }
         return
     }
+    val gridSpacing = when {
+        landscape && columns >= 5 -> 6.dp
+        landscape -> 9.dp
+        columns >= 4 -> 7.dp
+        columns == 3 -> 9.dp
+        else -> 11.dp
+    }
     LazyVerticalGrid(
-        columns = GridCells.Fixed(if (landscape) 3 else 2),
+        columns = GridCells.Fixed(columns),
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = if (landscape) 4.dp else 22.dp),
-        horizontalArrangement = Arrangement.spacedBy(if (landscape) 9.dp else 11.dp),
-        verticalArrangement = Arrangement.spacedBy(if (landscape) 9.dp else 11.dp),
+        horizontalArrangement = Arrangement.spacedBy(gridSpacing),
+        verticalArrangement = Arrangement.spacedBy(gridSpacing),
     ) {
         items(actions, key = { it.id }) { action ->
             DeckCard(
                 action = action,
                 landscape = landscape,
+                columns = columns,
                 busy = action.id in busy,
                 onOpen = { onOpen(action) },
                 onClose = { onClose(action) },
@@ -383,6 +570,7 @@ private fun DeckGrid(
 private fun DeckCard(
     action: SyncAction,
     landscape: Boolean,
+    columns: Int,
     busy: Boolean,
     onOpen: () -> Unit,
     onClose: () -> Unit,
@@ -394,7 +582,26 @@ private fun DeckCard(
     var pressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(if (pressed) .965f else 1f, spring(stiffness = 680f), label = "card-scale")
     val openGlow by animateFloatAsState(if (action.isOpen) 1f else 0f, spring(stiffness = 430f), label = "open-glow")
-    val shape = RoundedCornerShape(if (landscape) 24.dp else 27.dp)
+    val compactPortrait = !landscape && columns >= 3
+    val densePortrait = !landscape && columns >= 4
+    val shape = RoundedCornerShape(
+        when {
+            landscape && columns >= 5 -> 18.dp
+            landscape -> 22.dp
+            densePortrait -> 18.dp
+            compactPortrait -> 22.dp
+            else -> 27.dp
+        },
+    )
+    val cardRatio = when {
+        landscape && columns <= 3 -> 1.45f
+        landscape && columns == 4 -> 1.40f
+        landscape && columns == 5 -> 1.32f
+        landscape -> 1.22f
+        densePortrait -> .92f
+        compactPortrait -> .90f
+        else -> .88f
+    }
     val accent = parseDeckColor(action.color)
     val borderBrush = Brush.linearGradient(
         listOf(
@@ -407,7 +614,7 @@ private fun DeckCard(
     Box(
         Modifier
             .fillMaxWidth()
-            .aspectRatio(if (landscape) 1.32f else .88f)
+            .aspectRatio(cardRatio)
             .scale(scale)
             .graphicsLayer {
                 shadowElevation = 10f + 15f * openGlow
@@ -439,31 +646,92 @@ private fun DeckCard(
                     onMenu()
                 },
             )
-            .padding(if (landscape) 12.dp else 15.dp),
+            .padding(
+                when {
+                    landscape && columns >= 5 -> 7.dp
+                    landscape -> 10.dp
+                    densePortrait -> 7.dp
+                    compactPortrait -> 10.dp
+                    else -> 15.dp
+                },
+            ),
     ) {
         if (landscape) {
-            ActionLogo(action, busy, loadIcon, Modifier.align(Alignment.Center).fillMaxHeight(.72f).aspectRatio(1f))
+            ActionLogo(
+                action,
+                busy,
+                loadIcon,
+                Modifier.align(Alignment.Center).fillMaxHeight(if (columns >= 5) .68f else .72f).aspectRatio(1f),
+            )
         } else {
             Column(Modifier.fillMaxSize()) {
                 Row(verticalAlignment = Alignment.Top) {
-                    ActionLogo(action, busy, loadIcon, Modifier.size(62.dp))
+                    ActionLogo(
+                        action,
+                        busy,
+                        loadIcon,
+                        Modifier.size(
+                            when {
+                                densePortrait -> 34.dp
+                                compactPortrait -> 46.dp
+                                else -> 62.dp
+                            },
+                        ),
+                    )
                     Spacer(Modifier.weight(1f))
                     if (action.closable) {
+                        val closeSize = when {
+                            densePortrait -> 23.dp
+                            compactPortrait -> 28.dp
+                            else -> 34.dp
+                        }
                         Surface(
-                            modifier = Modifier.size(34.dp).clip(CircleShape).combinedClickable(onClick = onClose),
+                            modifier = Modifier.size(closeSize).clip(CircleShape).combinedClickable(onClick = onClose),
                             shape = CircleShape,
                             color = Color.White.copy(alpha = .075f),
-                        ) { Box(contentAlignment = Alignment.Center) { Text("×", color = Color.White.copy(alpha = .7f), fontSize = 20.sp) } }
+                            contentColor = Color.White,
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("×", color = Color.White.copy(alpha = .78f), fontSize = if (densePortrait) 15.sp else 20.sp)
+                            }
+                        }
                     }
                 }
                 Spacer(Modifier.weight(1f))
                 AnimatedVisibility(action.isOpen) {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 6.dp)) {
-                        Box(Modifier.size(6.dp).background(accent, CircleShape))
-                        Text("ABERTO", color = accent, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp, modifier = Modifier.padding(start = 6.dp))
+                    if (densePortrait) {
+                        Box(Modifier.padding(bottom = 4.dp).size(6.dp).background(accent, CircleShape))
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = if (compactPortrait) 4.dp else 6.dp)) {
+                            Box(Modifier.size(if (compactPortrait) 5.dp else 6.dp).background(accent, CircleShape))
+                            Text(
+                                "ABERTO",
+                                color = accent,
+                                fontSize = if (compactPortrait) 7.5.sp else 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                letterSpacing = if (compactPortrait) .8.sp else 1.2.sp,
+                                modifier = Modifier.padding(start = 5.dp),
+                            )
+                        }
                     }
                 }
-                Text(action.label, fontWeight = FontWeight.Bold, fontSize = 15.5.sp, maxLines = 2, overflow = TextOverflow.Ellipsis, lineHeight = 19.sp)
+                Text(
+                    action.label,
+                    color = Color.White.copy(alpha = .94f),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = when {
+                        densePortrait -> 10.5.sp
+                        compactPortrait -> 12.5.sp
+                        else -> 15.5.sp
+                    },
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    lineHeight = when {
+                        densePortrait -> 12.sp
+                        compactPortrait -> 15.sp
+                        else -> 19.sp
+                    },
+                )
             }
         }
     }
@@ -597,6 +865,7 @@ private fun ConnectionDialog(controller: DeckController, onDismiss: () -> Unit) 
             modifier = Modifier.fillMaxWidth(.94f).widthIn(max = 620.dp),
             shape = RoundedCornerShape(28.dp),
             color = Color(0xFA191C25),
+            contentColor = MaterialTheme.colorScheme.onSurface,
             shadowElevation = 24.dp,
         ) {
             Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -607,14 +876,23 @@ private fun ConnectionDialog(controller: DeckController, onDismiss: () -> Unit) 
                     }
                     TextButton(onClick = onDismiss, enabled = !loading && controller.configured) { Text("Fechar") }
                 }
-                Surface(shape = RoundedCornerShape(17.dp), color = MaterialTheme.colorScheme.primary.copy(alpha = .08f)) {
+                Surface(
+                    shape = RoundedCornerShape(17.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = .08f),
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ) {
                     Text("O endereço é salvo no celular e recuperado automaticamente se o roteador trocar o IP do PC.", modifier = Modifier.padding(13.dp), color = Color.White.copy(alpha = .67f), style = MaterialTheme.typography.bodySmall)
                 }
                 OutlinedTextField(host, { host = it; verified = null; fingerprintChecked = false }, Modifier.fillMaxWidth(), singleLine = true, label = { Text("IP privado do PC") }, placeholder = { Text("192.168.0.185") })
                 OutlinedTextField(port, { port = it.filter(Char::isDigit).take(5); verified = null }, Modifier.fillMaxWidth(), singleLine = true, label = { Text("Porta") })
                 OutlinedTextField(code, { code = it.filter(Char::isDigit).take(6) }, Modifier.fillMaxWidth(), singleLine = true, label = { Text("Código de 6 números") }, enabled = !controller.paired)
 
-                Surface(shape = RoundedCornerShape(16.dp), color = Color.White.copy(alpha = .045f), modifier = Modifier.fillMaxWidth()) {
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Color.White.copy(alpha = .045f),
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
                     Column(Modifier.padding(14.dp)) {
                         Text(result, color = Color.White.copy(alpha = .72f), style = MaterialTheme.typography.bodySmall)
                         verified?.takeIf { it.fingerprint.isNotBlank() }?.let { status ->
@@ -690,3 +968,27 @@ private fun actionGlyph(action: SyncAction) = when (action.icon) {
 private fun parseDeckColor(value: String): Color = runCatching {
     Color(android.graphics.Color.parseColor(value))
 }.getOrDefault(Color(0xFF697386))
+
+private class GridPreferences(context: Context) {
+    private val preferences = context.applicationContext.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+
+    var portraitColumns: Int
+        get() = preferences.getInt(KEY_PORTRAIT_COLUMNS, DEFAULT_PORTRAIT_COLUMNS).coerceIn(2, 4)
+        set(value) {
+            preferences.edit().putInt(KEY_PORTRAIT_COLUMNS, value.coerceIn(2, 4)).apply()
+        }
+
+    var landscapeColumns: Int
+        get() = preferences.getInt(KEY_LANDSCAPE_COLUMNS, DEFAULT_LANDSCAPE_COLUMNS).coerceIn(3, 6)
+        set(value) {
+            preferences.edit().putInt(KEY_LANDSCAPE_COLUMNS, value.coerceIn(3, 6)).apply()
+        }
+
+    private companion object {
+        const val PREFERENCES_NAME = "syncdeck_ui"
+        const val KEY_PORTRAIT_COLUMNS = "portrait_columns"
+        const val KEY_LANDSCAPE_COLUMNS = "landscape_columns"
+        const val DEFAULT_PORTRAIT_COLUMNS = 2
+        const val DEFAULT_LANDSCAPE_COLUMNS = 4
+    }
+}

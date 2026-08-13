@@ -91,7 +91,7 @@ Antes de produção, teste quando possível:
 - uma versão intermediária recente;
 - Android 16/API 36;
 - telas pequenas, fonte ampliada e tema escuro do sistema;
-- instalação via teste da Play Store, não apenas via ADB.
+- instalação do pacote assinado, não apenas via ADB.
 
 ## GitHub Actions
 

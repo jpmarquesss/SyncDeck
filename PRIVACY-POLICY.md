@@ -71,7 +71,7 @@ Mudanças relevantes serão registradas neste documento e no changelog do projet
 
 ## Contato
 
-Antes de publicar esta política, substitua `SEU_EMAIL_DE_SUPORTE` pelo mesmo endereço verificado que será exibido na Google Play.
+Antes de distribuir esta política, substitua `SEU_EMAIL_DE_SUPORTE` pelo endereço oficial de suporte do projeto.
 
 **E-mail de privacidade e suporte:** `SEU_EMAIL_DE_SUPORTE`
 

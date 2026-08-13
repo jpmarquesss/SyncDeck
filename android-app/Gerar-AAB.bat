@@ -4,7 +4,7 @@ cd /d "%~dp0"
 
 if not exist "keystore.properties" (
   echo ERRO: crie keystore.properties usando keystore.properties.example.
-  echo A chave de upload e obrigatoria para publicar na Play Store.
+  echo A chave de assinatura e obrigatoria para gerar o pacote de release.
   pause
   exit /b 1
 )

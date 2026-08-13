@@ -23,7 +23,7 @@ Todas as mudanças relevantes do SyncDeck são registradas neste arquivo. O proj
 - Catálogo de programas instalado no Windows e seletores nativos de arquivo/pasta, sem digitar caminhos.
 - Aprovação obrigatória no PC ao cadastrar, alterar ou executar comandos e atalhos sensíveis.
 - Protocolo de segurança v2 com conteúdo cifrado, respostas autenticadas, limite de requisições e confirmação visual detalhada.
-- Geração de Android App Bundle, exemplo de configuração da chave de upload e documentação completa para a Play Store.
+- Geração do pacote Android de release e configuração privada da chave de assinatura.
 - Ícone adaptativo, tema monocromático e materiais iniciais para a listagem pública.
 - Instalador simples do agente em uma pasta permanente do perfil do Windows.
 

@@ -16,11 +16,11 @@ Se o APK novo estiver assinado pela mesma chave do APK instalado, o Android
 preserva endereço, pareamento e Wake-on-LAN. Não desinstale antes de tentar a
 atualização.
 
-MIGRAÇÃO PARA A PLAY STORE
---------------------------
+MIGRAÇÃO DA ASSINATURA ANDROID
+------------------------------
 
-Uma instalação de desenvolvimento normalmente usa a chave debug. A versão da
-Play Store usa a chave de assinatura do Google Play e não pode substituir esse
+Uma instalação de desenvolvimento normalmente usa a chave debug. Uma instalação
+assinada por outra chave não pode substituir esse
 APK debug. Nesse caso será necessário desinstalar a versão de desenvolvimento,
 instalar a versão oficial e parear uma única vez novamente.
 

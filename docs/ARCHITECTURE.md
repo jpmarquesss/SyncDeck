@@ -114,4 +114,4 @@ Quando o endereço salvo não responde, o Android examina por tempo limitado os 
 
 ## Cliente iOS experimental
 
-O cliente SwiftUI 0.5 continua no repositório para uso pessoal e compatibilidade. Ele usa o protocolo HMAC legado, sem a cifra de conteúdo v2, e não faz parte da publicação Android 1.0 na Google Play.
+O cliente SwiftUI 0.5 continua no repositório para uso pessoal e compatibilidade. Ele usa o protocolo HMAC legado, sem a cifra de conteúdo v2, e não faz parte da distribuição Android 1.0.

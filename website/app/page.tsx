@@ -3,32 +3,34 @@
 import { useState } from "react";
 
 const repositoryUrl = "https://github.com/eudollyn/SyncDeck";
-const downloadsUrl =
-  "https://github.com/eudollyn/SyncDeck/actions/workflows/build.yml?query=branch%3Amain";
+const latestReleaseUrl = `${repositoryUrl}/releases/tag/latest`;
 
 type Platform = "windows" | "android" | "iphone";
 
 const platformSummary: Record<
   Platform,
-  { eyebrow: string; title: string; text: string; artifact: string }
+  { eyebrow: string; title: string; text: string; artifact: string; downloadUrl: string }
 > = {
   windows: {
     eyebrow: "01 · Prepare o computador",
     title: "Agente Windows",
     text: "Baixe o artefato SyncDeck-Windows, extraia a pasta e execute o instalador permanente. Ele mantém o agente ativo sempre que você entrar no Windows.",
-    artifact: "SyncDeck-Windows",
+    artifact: "SyncDeck-Windows.zip",
+    downloadUrl: `${repositoryUrl}/releases/download/latest/SyncDeck-Windows.zip`,
   },
   android: {
     eyebrow: "02 · Instale no celular",
     title: "Aplicativo Android",
-    text: "Baixe SyncDeck-Android-debug, instale o APK e permita a instalação manual somente durante esse processo. Compatível com Android 8.0 ou superior.",
-    artifact: "SyncDeck-Android-debug",
+    text: "Baixe o APK, instale e permita a instalação manual somente durante esse processo. Compatível com Android 8.0 ou superior.",
+    artifact: "SyncDeck-Android.apk",
+    downloadUrl: `${repositoryUrl}/releases/download/latest/SyncDeck-Android.apk`,
   },
   iphone: {
     eyebrow: "Alternativa experimental",
     title: "Aplicativo para iPhone",
     text: "Baixe o IPA sem assinatura e instale pelo Windows usando uma ferramenta de assinatura pessoal. Esta versão ainda não é uma distribuição oficial da App Store.",
-    artifact: "SyncDeck-iOS-unsigned",
+    artifact: "SyncDeck-iOS-unsigned.ipa",
+    downloadUrl: `${repositoryUrl}/releases/download/latest/SyncDeck-iOS-unsigned.ipa`,
   },
 };
 
@@ -67,8 +69,8 @@ const guideSteps = [
   {
     number: "01",
     title: "Baixe os arquivos oficiais",
-    text: "Abra o último processo concluído na área Actions do GitHub e role até Artifacts. Baixe SyncDeck-Windows e SyncDeck-Android-debug.",
-    note: "Os artefatos ficam disponíveis por 14 dias após cada compilação.",
+    text: "Escolha Windows ou Android na seção acima e toque em Baixar. O arquivo correto começa a baixar diretamente, sem passar pela página do GitHub Actions.",
+    note: "Use somente os links oficiais deste site ou a área Releases do projeto.",
   },
   {
     number: "02",
@@ -239,7 +241,7 @@ export default function Home() {
           <a className="github-link" href={repositoryUrl} target="_blank" rel="noreferrer">
             GitHub <ArrowIcon />
           </a>
-          <a className="button button-small button-primary" href={downloadsUrl} target="_blank" rel="noreferrer">
+          <a className="button button-small button-primary" href="#instalacao">
             Baixar grátis
           </a>
           <button
@@ -280,7 +282,7 @@ export default function Home() {
             fechar e automatizar tarefas no Windows — diretamente pela sua rede local.
           </p>
           <div className="hero-actions">
-            <a className="button button-primary button-large" href={downloadsUrl} target="_blank" rel="noreferrer">
+            <a className="button button-primary button-large" href="#instalacao">
               Baixar SyncDeck <span>↓</span>
             </a>
             <a className="button button-ghost button-large" href="#instalacao">
@@ -398,7 +400,7 @@ export default function Home() {
           <div className="artifact-card">
             <small>ARQUIVO NO GITHUB</small>
             <strong>{selectedPlatform.artifact}</strong>
-            <a href={downloadsUrl} target="_blank" rel="noreferrer">Abrir downloads <ArrowIcon /></a>
+            <a href={selectedPlatform.downloadUrl} download>Baixar agora <span aria-hidden="true">↓</span></a>
           </div>
         </div>
 
@@ -413,8 +415,8 @@ export default function Home() {
             <span className="eyebrow">GUIA DE INSTALAÇÃO</span>
             <h2>Do download ao primeiro toque.</h2>
             <p>Siga estas quatro etapas na ordem. Em uma instalação comum, você só precisa configurar o firewall e parear uma vez.</p>
-            <a className="button button-primary button-large" href={downloadsUrl} target="_blank" rel="noreferrer">
-              Abrir downloads <ArrowIcon />
+            <a className="button button-primary button-large" href="#instalacao">
+              Escolher download <span aria-hidden="true">↓</span>
             </a>
           </aside>
           <div className="guide-steps">
@@ -565,7 +567,7 @@ export default function Home() {
           <h2>Seu fluxo, agora<br />a um toque.</h2>
           <p>Baixe o SyncDeck, conecte seu celular e transforme tarefas repetitivas em botões.</p>
           <div className="hero-actions">
-            <a className="button button-primary button-large" href={downloadsUrl} target="_blank" rel="noreferrer">Baixar grátis <span>↓</span></a>
+            <a className="button button-primary button-large" href="#instalacao">Baixar grátis <span>↓</span></a>
             <a className="button button-ghost button-large" href={repositoryUrl} target="_blank" rel="noreferrer">Ver código no GitHub <ArrowIcon /></a>
           </div>
         </div>
@@ -577,6 +579,7 @@ export default function Home() {
           <p>Controle seu Windows de um jeito mais rápido, simples e seguro.</p>
           <div>
             <a href={repositoryUrl} target="_blank" rel="noreferrer">GitHub</a>
+            <a href={latestReleaseUrl} target="_blank" rel="noreferrer">Versão mais recente</a>
             <a href="#instalacao">Instalação</a>
             <a href="#ajuda">Ajuda</a>
           </div>

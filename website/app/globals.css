@@ -23,6 +23,7 @@ html {
 
 body {
   margin: 0;
+  overflow-x: clip;
   background:
     radial-gradient(circle at 50% -20%, rgba(71, 182, 120, 0.11), transparent 34rem),
     var(--background);
@@ -1259,32 +1260,39 @@ button { font: inherit; }
 }
 
 @media (max-width: 720px) {
-  .section-shell, .proof-bar { width: min(100% - 28px, 1180px); }
+  html { scroll-padding-top: 78px; }
+  .section-shell, .proof-bar { width: min(100% - 24px, 1180px); }
   .site-header { width: calc(100% - 18px); min-height: 64px; margin-top: 9px; padding-left: 15px; }
+  .brand { font-size: 16px; }
+  .mobile-nav { max-height: calc(100dvh - 88px); overflow-y: auto; }
   .header-actions .button-small { display: none; }
-  .hero { gap: 30px; padding-block: 74px 55px; }
-  .hero h1 { font-size: clamp(45px, 15vw, 62px); }
+  .hero { gap: 22px; padding-block: 60px 45px; }
+  .hero h1 { font-size: clamp(42px, 13vw, 58px); line-height: 1.01; }
   .hero-lead { font-size: 16px; }
-  .hero-actions { display: grid; }
-  .hero-trust { gap: 10px 16px; }
-  .product-visual { min-height: 545px; transform: scale(0.88); transform-origin: top center; margin-bottom: -70px; }
-  .desktop-card { top: 100px; left: -50px; width: 340px; }
-  .phone-shell { right: -10px; }
-  .chip-open { right: -42px; }
-  .chip-lan { left: -46px; }
+  .hero-actions { display: grid; width: 100%; }
+  .hero-actions .button { width: 100%; }
+  .hero-trust { display: grid; grid-template-columns: 1fr; justify-items: start; width: fit-content; margin-inline: auto; gap: 9px; }
+  .product-visual { min-height: 525px; width: 100%; margin: 0 auto -25px; }
+  .desktop-card, .floating-chip, .ambient-ring { display: none; }
+  .phone-shell { top: 0; right: 50%; transform: translateX(50%) rotate(1deg); }
   .proof-bar { grid-template-columns: repeat(2, 1fr); }
   .proof-bar div { min-height: 74px; border-bottom: 1px solid var(--line); }
   .proof-bar div:nth-child(2) { border-right: 0; }
   .proof-bar div:nth-child(3), .proof-bar div:nth-child(4) { border-bottom: 0; }
-  .section { padding-block: 95px; }
+  .section { padding-block: 76px; }
   .steps-flow { grid-template-columns: 1fr; gap: 14px; margin-top: 45px; }
   .flow-arrow { transform: rotate(90deg); }
   .step-card { min-height: 285px; }
   .features-grid { grid-template-columns: 1fr; }
-  .feature-card { min-height: 410px; }
-  .platform-tabs { grid-template-columns: 1fr; }
-  .platform-panel { grid-template-columns: 1fr; gap: 30px; padding: 28px; }
-  .guide-section { padding-block: 95px; }
+  .feature-card { min-height: 360px; }
+  .platform-tabs { grid-template-columns: repeat(3, 1fr); margin-top: 36px; }
+  .platform-tabs button { min-height: 46px; gap: 5px; font-size: 12px; }
+  .platform-logo { width: 18px; height: 18px; font-size: 13px; }
+  .platform-panel { grid-template-columns: 1fr; gap: 24px; min-height: 0; padding: 24px 20px; border-radius: 20px; }
+  .platform-panel h3 { font-size: 25px; }
+  .artifact-card { padding: 18px; }
+  .artifact-card a { min-height: 44px; align-items: center; }
+  .guide-section { padding-block: 76px; }
   .guide-step { grid-template-columns: 44px 1fr; gap: 17px; padding: 23px 19px; }
   .guide-step > span { width: 40px; height: 40px; }
   .check-grid, .action-types { grid-template-columns: 1fr; }
@@ -1299,11 +1307,14 @@ button { font: inherit; }
   .help-card { grid-template-columns: 1fr; padding: 28px; }
   .help-card .button { width: 100%; }
   .footer-inner { grid-template-columns: 1fr; justify-items: center; }
-  .footer-inner > div { justify-content: center; }
+  .footer-inner > div { flex-wrap: wrap; justify-content: center; }
 }
 
 @media (max-width: 430px) {
-  .product-visual { left: 50%; width: 440px; transform: translateX(-50%) scale(0.72); transform-origin: top center; margin-bottom: -145px; }
+  .product-visual { min-height: 500px; margin-bottom: -42px; }
+  .phone-shell { width: 250px; }
+  .phone-screen { min-height: 505px; padding-inline: 13px; }
+  .deck-button { min-height: 107px; }
   .proof-bar div { flex-direction: column; gap: 2px; }
 }
 
@@ -1313,6 +1324,14 @@ button { font: inherit; }
   .chip-lan { animation-delay: -2.2s; }
   @keyframes float-phone { 0%, 100% { transform: rotate(2.4deg) translateY(0); } 50% { transform: rotate(1.4deg) translateY(-10px); } }
   @keyframes float-chip { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+}
+
+@media (max-width: 720px) and (prefers-reduced-motion: no-preference) {
+  .phone-shell { animation: float-phone-mobile 6s ease-in-out infinite; }
+  @keyframes float-phone-mobile {
+    0%, 100% { transform: translateX(50%) rotate(1deg) translateY(0); }
+    50% { transform: translateX(50%) rotate(0.4deg) translateY(-7px); }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

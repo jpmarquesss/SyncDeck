@@ -104,6 +104,6 @@ O MAC, broadcast e porta são entregues somente em resposta autenticada e ficam 
 
 ## Assinatura de distribuição
 
-- Play Store: use Play App Signing e guarde a chave de upload fora do Git.
+- Distribuição Android: guarde a chave de assinatura fora do Git e limite o acesso ao proprietário.
 - Windows: o código-fonte compila um executável funcional, mas uma distribuição pública deve assinar o binário com Authenticode.
 - Nunca publique `keystore.properties`, `.jks`, `.pfx`, clientes pareados ou arquivos de `%LOCALAPPDATA%\SyncDeck`.

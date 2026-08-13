@@ -28,9 +28,9 @@ Saídas:
 
 - agente: `windows-agent\SyncDeckAgent.exe`;
 - APK de teste: `android-app\app\build\outputs\apk\debug\app-debug.apk`;
-- AAB assinado: `android-app\app\build\outputs\bundle\release\app-release.aab`.
+- pacote Android de release: `android-app\app\build\outputs\bundle\release\app-release.aab`.
 
-`Gerar-APK.bat` copia o APK para `android-app\SyncDeck.apk`. `Gerar-AAB.bat` exige `keystore.properties`; veja [PLAY-STORE.md](PLAY-STORE.md).
+`Gerar-APK.bat` copia o APK para `android-app\SyncDeck.apk`. As credenciais de assinatura permanecem somente no ambiente privado do proprietário.
 
 ## Organização do Android
 
@@ -40,7 +40,7 @@ O aplicativo usa Kotlin 2.2.10 e Jetpack Compose, com estado centralizado em `De
 - Faça rede, disco e criptografia fora do thread principal.
 - Converta dados externos em modelos validados antes de atualizar o estado.
 - Preserve `minSdk 26` e teste retrato e paisagem.
-- Não adicione permissão, SDK de telemetria ou dependência sem atualizar privacidade, Data Safety e modelo de ameaça.
+- Não adicione permissão, SDK de telemetria ou dependência sem atualizar a política de privacidade e o modelo de ameaça.
 - Não registre segredo, código de pareamento, caminhos, IP/MAC ou payload descriptografado.
 
 ## Organização do agente

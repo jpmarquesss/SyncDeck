@@ -49,8 +49,7 @@ def require_files() -> None:
         ".gitignore", ".github/workflows/build.yml", ".github/dependabot.yml",
         "docs/ARCHITECTURE.md", "docs/ACTIONS.md", "docs/PROTOCOL.md",
         "docs/DEVELOPMENT.md", "docs/TESTING.md", "docs/RELEASING.md",
-        "docs/TROUBLESHOOTING.md", "docs/WAKE-ON-LAN.md", "docs/PLAY-STORE.md",
-        "docs/DATA-SAFETY.md", "docs/STORE-LISTING.md", "store-assets/play-icon-512.png",
+        "docs/TROUBLESHOOTING.md", "docs/WAKE-ON-LAN.md", "store-assets/play-icon-512.png",
         "android-app/Gerar-APK.bat", "android-app/Gerar-AAB.bat",
         "android-app/keystore.properties.example", "android-app/gradlew",
         "android-app/gradlew.bat", "android-app/gradle/wrapper/gradle-wrapper.jar",
@@ -181,9 +180,9 @@ def validate_android() -> None:
         width = int.from_bytes(data[16:20], "big")
         height = int.from_bytes(data[20:24], "big")
         if (width, height) != (512, 512):
-            fail(f"Ícone da Play Store mede {width}x{height}; esperado 512x512.")
+            fail(f"Ícone de distribuição mede {width}x{height}; esperado 512x512.")
     except Exception as error:
-        fail(f"Ícone da Play Store inválido: {error}")
+        fail(f"Ícone de distribuição inválido: {error}")
 
 
 def validate_ios_project() -> None:

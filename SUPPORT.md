@@ -8,7 +8,7 @@ Consulte primeiro:
 - [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) para erros comuns.
 - [docs/WAKE-ON-LAN.md](docs/WAKE-ON-LAN.md) para configurar o botão Ligar PC.
 - [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) para compilação.
-- [docs/PLAY-STORE.md](docs/PLAY-STORE.md) para testes e publicação Android.
+- [docs/RELEASING.md](docs/RELEASING.md) para versões e downloads oficiais.
 - [INSTALAR-NO-IPHONE.txt](INSTALAR-NO-IPHONE.txt) para gerar, assinar, instalar e renovar o app no iPhone sem Mac.
 
 Se o problema continuar, abra uma issue usando o modelo **Relatar problema** e inclua:

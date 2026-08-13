@@ -5,18 +5,18 @@
 | Artefato | Uso | Assinatura |
 |---|---|---|
 | `app-debug.apk` | Teste local | Chave debug; nunca produção |
-| `app-release.aab` | Upload na Google Play | Chave de upload + Play App Signing |
+| `SyncDeck-Android.apk` | Download Android oficial | Assinatura de distribuição |
 | `SyncDeckAgent.exe` | Agente Windows | Authenticode recomendado antes de distribuir |
 | `SyncDeck-unsigned.ipa` | Cliente iOS experimental | Precisa ser assinado separadamente |
 | ZIP do código-fonte | GitHub/revisão | SHA-256 publicado junto |
 
-O APK debug de outra máquina pode usar uma assinatura diferente e não atualizar uma instalação existente. A primeira instalação da Play também não substitui um APK debug: desinstale-o e pareie novamente uma vez.
+Um APK assinado por outra chave não atualiza uma instalação existente. Confirme a origem antes de instalar ou substituir o aplicativo.
 
 ## Versão Android/Windows
 
 Para cada release pública:
 
-1. aumente `versionCode` sem reutilizar valores da Play;
+1. aumente `versionCode` sem reutilizar valores anteriores;
 2. atualize `versionName` em `android-app/app/build.gradle`;
 3. atualize agente, manifesto, `AssemblyInfo.cs`, `VERSION`, README e changelog;
 4. mantenha o iOS experimental em sua própria cadência;
@@ -30,21 +30,9 @@ Para cada release pública:
 - [ ] Agente compilou no Windows e foi testado após login/reinício.
 - [ ] Pareamento, criação dos quatro tipos, aprovação no PC, janelas e WOL foram testados.
 - [ ] GitHub Actions ficou totalmente verde.
-- [ ] `CHANGELOG.md`, política de privacidade, Data Safety e texto da loja continuam verdadeiros.
+- [ ] `CHANGELOG.md` e a política de privacidade continuam verdadeiros.
 - [ ] Nenhum IP, MAC, código, cliente pareado, keystore ou certificado entrou no commit.
-- [ ] AAB foi instalado por teste interno/fechado e o relatório de pré-lançamento foi revisado.
 - [ ] Agente público foi assinado ou a ausência de assinatura foi claramente informada.
-
-## Gerar AAB
-
-Crie `android-app/keystore.properties` localmente e execute:
-
-```powershell
-cd android-app
-Gerar-AAB.bat
-```
-
-Não publique a chave de upload. Veja [PLAY-STORE.md](PLAY-STORE.md) para o processo completo.
 
 ## Criar tag
 
@@ -72,11 +60,11 @@ Não anexe chave de upload, `keystore.properties`, PFX, dados do perfil local ou
 
 ```powershell
 Get-FileHash .\windows-agent\SyncDeckAgent.exe -Algorithm SHA256
-Get-FileHash .\android-app\app\build\outputs\bundle\release\app-release.aab -Algorithm SHA256
+Get-FileHash .\android-app\app\build\outputs\apk\release\app-release.apk -Algorithm SHA256
 ```
 
 O checksum detecta alteração acidental no download, mas não substitui assinatura de código.
 
 ## Rollback
 
-A Google Play não permite diminuir `versionCode`. Para reverter uma falha, publique o último código conhecido com um `versionCode` novo e notas claras. Se houver mudança de formato local, mantenha migração para frente e backup antes de escrever.
+Para reverter uma falha, publique o último código conhecido com um `versionCode` novo e notas claras. Se houver mudança de formato local, mantenha migração para frente e backup antes de escrever.

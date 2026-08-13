@@ -8,8 +8,6 @@ Transforme um celular Android em um painel moderno para abrir, focar e fechar pr
 
 **Versão:** 1.0.1 · **Licença:** MIT · **Android:** Kotlin + Jetpack Compose · **Windows:** C#/.NET Framework 4.8
 
-> O aplicativo Android 1.0.1 está estruturado para publicação pública na Play Store. A publicação ainda exige uma conta de desenvolvedor, uma chave de upload, materiais da loja e os testes do proprietário descritos em [Publicar na Play Store](docs/PLAY-STORE.md).
-
 ## Destaques
 
 - Grade ajustável: 2–4 botões por linha em retrato e 3–6 em paisagem, que continua em tela cheia e somente com logos.
@@ -122,20 +120,6 @@ O protocolo usa HTTP local porque o agente não depende de certificado ou servid
 
 Consulte [Segurança](SECURITY.md), [Política de privacidade](PRIVACY-POLICY.md) e [Protocolo](docs/PROTOCOL.md).
 
-## Publicação na Play Store
-
-O projeto já inclui:
-
-- `targetSdk 36`, `versionCode 11` e pacote `com.syncdeck.app`;
-- build de release com R8 e redução de recursos;
-- suporte opcional a chave de upload em `keystore.properties`;
-- `Gerar-AAB.bat` para criar o Android App Bundle;
-- ícone adaptativo e monocromático;
-- texto da listagem, modelo de Data Safety e política de privacidade;
-- CI para teste, lint, APK, AAB e agente Windows.
-
-Antes do primeiro upload, confirme que o identificador `com.syncdeck.app` está disponível e é o identificador permanente desejado. Siga a lista completa em [docs/PLAY-STORE.md](docs/PLAY-STORE.md).
-
 ## Desenvolvimento
 
 ```powershell
@@ -164,8 +148,8 @@ A pasta `ios-app` preserva o cliente SwiftUI 0.5.0 para iOS 15 e iPhone 11 Pro. 
 - `brand/`: logo, símbolo e guia de identidade visual oficial.
 - `tests/`: vetores determinísticos do protocolo.
 - `scripts/`: validação, build e empacotamento.
-- `docs/`: arquitetura, protocolo, ações, testes, releases e publicação.
-- `store-assets/`: materiais não secretos para a listagem.
+- `docs/`: arquitetura, protocolo, ações, testes e releases do projeto.
+- `store-assets/`: identidade visual e capturas públicas do aplicativo.
 
 ## Documentação
 
@@ -177,9 +161,6 @@ A pasta `ios-app` preserva o cliente SwiftUI 0.5.0 para iOS 15 e iPhone 11 Pro. 
 | [Desenvolvimento](docs/DEVELOPMENT.md) | Ambiente e contribuição |
 | [Testes](docs/TESTING.md) | CI e matriz manual |
 | [Releases](docs/RELEASING.md) | Versionamento e artefatos |
-| [Play Store](docs/PLAY-STORE.md) | AAB, assinatura e Console |
-| [Data Safety](docs/DATA-SAFETY.md) | Respostas propostas para o formulário |
-| [Texto da loja](docs/STORE-LISTING.md) | Nome, descrições e imagens |
 | [Wake-on-LAN](docs/WAKE-ON-LAN.md) | BIOS, Realtek e diagnóstico |
 | [Troubleshooting](docs/TROUBLESHOOTING.md) | Erros e soluções |
 

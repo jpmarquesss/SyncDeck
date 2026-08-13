@@ -1,0 +1,17 @@
+{
+  "name": "SyncDeck",
+  "short_name": "SyncDeck",
+  "description": "Controle seu PC Windows pelo celular na rede local.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070A09",
+  "theme_color": "#070A09",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

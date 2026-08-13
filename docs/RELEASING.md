@@ -1,65 +1,82 @@
-# Publicação de versões
+# Releases
 
-## 1. Preparar
+## Artefatos
 
-1. Atualize versões conforme [DEVELOPMENT.md](DEVELOPMENT.md).
-2. Atualize <code>CHANGELOG.md</code>.
-3. Execute <code>python scripts/validate_repository.py</code>.
-4. Compile Windows e Android.
-5. Execute a matriz manual relevante.
-6. Confirme que <code>git status</code> não contém binários, chaves ou dados locais.
+| Artefato | Uso | Assinatura |
+|---|---|---|
+| `app-debug.apk` | Teste local | Chave debug; nunca produção |
+| `app-release.aab` | Upload na Google Play | Chave de upload + Play App Signing |
+| `SyncDeckAgent.exe` | Agente Windows | Authenticode recomendado antes de distribuir |
+| `SyncDeck-unsigned.ipa` | Cliente iOS experimental | Precisa ser assinado separadamente |
+| ZIP do código-fonte | GitHub/revisão | SHA-256 publicado junto |
 
-## 2. Assinatura Android
+O APK debug de outra máquina pode usar uma assinatura diferente e não atualizar uma instalação existente. A primeira instalação da Play também não substitui um APK debug: desinstale-o e pareie novamente uma vez.
 
-O APK debug do GitHub Actions é adequado apenas para testes. Cada ambiente pode usar uma chave debug diferente; por isso, um APK de CI pode não atualizar uma instalação anterior.
+## Versão Android/Windows
 
-Para releases:
+Para cada release pública:
 
-- crie uma chave privada própria e estável;
-- mantenha o keystore fora do Git;
-- faça backup seguro da chave e das senhas;
-- gere um APK release assinado;
-- publique também o SHA-256 do arquivo.
+1. aumente `versionCode` sem reutilizar valores da Play;
+2. atualize `versionName` em `android-app/app/build.gradle`;
+3. atualize agente, manifesto, `AssemblyInfo.cs`, `VERSION`, README e changelog;
+4. mantenha o iOS experimental em sua própria cadência;
+5. documente qualquer mudança de protocolo ou migração de dados.
 
-Não existe recuperação caso a chave de assinatura seja perdida. Uma chave diferente exige desinstalar o aplicativo anterior, o que remove o pareamento local.
+## Checklist
 
-## 3. Agente Windows
+- [ ] `python scripts/validate_repository.py` passou.
+- [ ] Vetor Java AES/HMAC passou.
+- [ ] Android `testDebugUnitTest`, `lintRelease`, `assembleDebug` e `bundleRelease` passaram.
+- [ ] Agente compilou no Windows e foi testado após login/reinício.
+- [ ] Pareamento, criação dos quatro tipos, aprovação no PC, janelas e WOL foram testados.
+- [ ] GitHub Actions ficou totalmente verde.
+- [ ] `CHANGELOG.md`, política de privacidade, Data Safety e texto da loja continuam verdadeiros.
+- [ ] Nenhum IP, MAC, código, cliente pareado, keystore ou certificado entrou no commit.
+- [ ] AAB foi instalado por teste interno/fechado e o relatório de pré-lançamento foi revisado.
+- [ ] Agente público foi assinado ou a ausência de assinatura foi claramente informada.
 
-Compile em Windows limpo:
+## Gerar AAB
 
-~~~powershell
-windows-agent\build-agent.bat
-~~~
+Crie `android-app/keystore.properties` localmente e execute:
 
-O executável atual não possui assinatura Authenticode. O Windows pode exibir alerta. Não desative SmartScreen globalmente; distribua código-fonte e hashes junto do binário.
+```powershell
+cd android-app
+Gerar-AAB.bat
+```
 
-## 4. Tag
+Não publique a chave de upload. Veja [PLAY-STORE.md](PLAY-STORE.md) para o processo completo.
 
-~~~powershell
-git tag -a v0.3.1 -m "SyncDeck 0.3.1"
-git push origin v0.3.1
-~~~
+## Criar tag
 
-## 5. GitHub Release
+Depois de confirmar o commit exato:
 
-Inclua:
+```powershell
+git tag -a v1.0.0 -m "SyncDeck 1.0.0"
+git push origin v1.0.0
+```
 
-- resumo do changelog;
-- requisitos;
-- passos de atualização;
-- APK release assinado;
-- pacote do agente Windows;
-- arquivo de código-fonte;
-- SHA-256 de cada binário;
-- aviso sobre rede privada e instalação manual.
+Para uma versão futura, substitua o número em todos os locais e na tag.
 
-## 6. Verificação
+## Release do GitHub
 
-Em PowerShell:
+Anexe, conforme apropriado:
 
-~~~powershell
-Get-FileHash .\SyncDeck.apk -Algorithm SHA256
-Get-FileHash .\SyncDeckAgent.exe -Algorithm SHA256
-~~~
+- agente Windows assinado e scripts de instalação/firewall;
+- arquivo SHA-256 de cada binário;
+- ZIP do código-fonte gerado pelo próprio GitHub ou por `scripts/package-source.ps1`;
+- notas de instalação e requisitos do agente.
 
-Teste instalação limpa e atualização por cima da versão anterior antes de marcar a release como estável.
+Não anexe chave de upload, `keystore.properties`, PFX, dados do perfil local ou APK debug como se fosse produção.
+
+## Checksums
+
+```powershell
+Get-FileHash .\windows-agent\SyncDeckAgent.exe -Algorithm SHA256
+Get-FileHash .\android-app\app\build\outputs\bundle\release\app-release.aab -Algorithm SHA256
+```
+
+O checksum detecta alteração acidental no download, mas não substitui assinatura de código.
+
+## Rollback
+
+A Google Play não permite diminuir `versionCode`. Para reverter uma falha, publique o último código conhecido com um `versionCode` novo e notas claras. Se houver mudança de formato local, mantenha migração para frente e backup antes de escrever.

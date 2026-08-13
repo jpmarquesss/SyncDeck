@@ -9,6 +9,16 @@ android-app/SyncDeck.apk
 *.keystore
 keystore.properties
 
+# iOS
+ios-app/DerivedData/
+ios-app/package/
+ios-app/*.ipa
+ios-app/*.ipa.sha256
+*.xcarchive
+*.mobileprovision
+**/xcuserdata/
+*.xcuserstate
+
 # Windows
 windows-agent/SyncDeckAgent.exe
 windows-agent/*.pdb

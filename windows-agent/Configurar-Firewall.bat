@@ -8,12 +8,15 @@ if not "%errorlevel%"=="0" (
   exit /b
 )
 
-if not exist "SyncDeckAgent.exe" call build-agent.bat
+set "AGENT_EXE=%LOCALAPPDATA%\SyncDeck\Agent\SyncDeckAgent.exe"
+if not exist "%AGENT_EXE%" set "AGENT_EXE=%~dp0SyncDeckAgent.exe"
+if not exist "%AGENT_EXE%" call build-agent.bat
 if errorlevel 1 exit /b 1
+if not exist "%AGENT_EXE%" set "AGENT_EXE=%~dp0SyncDeckAgent.exe"
 
 netsh advfirewall firewall delete rule name="SyncDeck Agent" >nul 2>&1
 netsh advfirewall firewall add rule name="SyncDeck Agent" dir=in action=allow ^
-  program="%~dp0SyncDeckAgent.exe" protocol=TCP localport=47321 ^
+  program="%AGENT_EXE%" protocol=TCP localport=47321 ^
   profile=private remoteip=localsubnet enable=yes
 
 if errorlevel 1 (

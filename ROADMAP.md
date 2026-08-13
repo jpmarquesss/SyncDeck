@@ -1,23 +1,28 @@
 # Roadmap
 
-O roadmap registra direções desejadas, não promessas de prazo.
+Direções possíveis, sem promessa de prazo.
 
-## Próximas melhorias
+## Segurança e distribuição
 
-- Pareamento por QR Code.
-- TLS com certificado fixado no aplicativo.
-- Reordenação dos botões diretamente no Android.
-- Páginas e perfis diferentes de painel.
-- Importação e exportação segura da configuração dos botões.
-- Seletores guiados de aplicativo, arquivo, pasta e perfil do navegador.
-- Testes automatizados adicionais para a enumeração de janelas no Windows.
-- Instalador assinado para o agente e fluxo documentado de APK release assinado.
+- Revisão externa do protocolo 2 e testes de integração com pacotes malformados.
+- Migração futura para TLS com certificado local fixado, preservando uso sem nuvem.
+- Suporte consciente à permissão de rede local quando o app mirar Android 17/API 37.
+- Instalador MSI/MSIX e executável Windows assinados com Authenticode.
+- Testes instrumentados Android, UI Automation no Windows e matriz física maior.
+- Processo reproduzível para builds e geração de SBOM/proveniência.
 
-## Ideias em avaliação
+## Experiência
 
-- Widgets de volume, mídia e microfone.
-- Ícones personalizados enviados pelo usuário.
-- Temas adicionais mantendo boa legibilidade.
-- Telemetria local opcional para diagnóstico, desativada por padrão.
+- Reordenação dos botões por arrastar.
+- Painéis/perfis diferentes e exportação/importação cifrada.
+- Pareamento por QR Code com confirmação do fingerprint.
+- Ícones personalizados e mais temas acessíveis.
+- Controles de mídia, volume e microfone com permissões claras.
 
-Sugestões devem ser abertas como **Feature request** no GitHub, com o caso de uso e o comportamento esperado.
+## Plataformas
+
+- Migrar o cliente iOS experimental ao protocolo cifrado 2.
+- Distribuição iOS oficial por TestFlight/App Store quando houver ambiente Apple e conta de desenvolvedor.
+- Avaliar Android tablets e acessibilidade ampliada sem prejudicar o painel compacto.
+
+Sugestões devem ser abertas como **Feature request**, descrevendo caso de uso, comportamento esperado e impacto de segurança/privacidade.

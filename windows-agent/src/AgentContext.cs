@@ -17,6 +17,7 @@ namespace SyncDeck.Agent
         private readonly AgentSettings _settings;
         private readonly DeckServer _server;
         private readonly Control _dispatcher;
+        private readonly DesktopSecurity _desktopSecurity;
         private PairingForm _pairingForm;
 
         public AgentContext()
@@ -28,6 +29,7 @@ namespace SyncDeck.Agent
             _pairing = new PairingManager();
             _dispatcher = new Control();
             _dispatcher.CreateControl();
+            _desktopSecurity = new DesktopSecurity(_dispatcher);
 
             ContextMenuStrip menu = new ContextMenuStrip();
             menu.Items.Add("Status e conexão", null, delegate { ShowStatus(); });
@@ -52,7 +54,7 @@ namespace SyncDeck.Agent
 
             try
             {
-                _server = new DeckServer(_settings.Port, _actions, _clients, _pairing);
+                _server = new DeckServer(_settings.Port, _actions, _clients, _pairing, _desktopSecurity);
                 _server.PhonePaired += OnPhonePaired;
                 _server.Start();
             }
@@ -113,7 +115,7 @@ namespace SyncDeck.Agent
             string addresses = ips.Length == 0 ? "Nenhum IP local encontrado" :
                 string.Join(Environment.NewLine, ips.Select(x => x + ":" + _settings.Port));
             MessageBox.Show(
-                "Agente: conectado — versão 0.3.1\n" +
+                "Agente: conectado — versão 1.0.0\n" +
                 "Celulares pareados: " + _clients.Count + "\n\n" +
                 "Endereço para o aplicativo:\n" + addresses + "\n\n" +
                 "A conexão aceita somente endereços da rede local.",

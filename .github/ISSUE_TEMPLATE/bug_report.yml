@@ -13,14 +13,14 @@ body:
     id: version
     attributes:
       label: Versão do SyncDeck
-      placeholder: "0.3.0 no Android e 0.3.0 no agente"
+      placeholder: "0.5.0 no Android/iPhone e 0.5.0 no agente"
     validations:
       required: true
   - type: input
     id: environment
     attributes:
       label: Ambiente
-      placeholder: "Windows 11, Moto G20, Android 11"
+      placeholder: "Windows 11, iPhone 11 Pro, iOS 18"
     validations:
       required: true
   - type: textarea
@@ -51,7 +51,7 @@ body:
     attributes:
       label: Verificações
       options:
-        - label: Atualizei o APK e o agente para a mesma versão.
+        - label: Atualizei o aplicativo móvel e o agente para a mesma versão.
           required: true
         - label: Removi dados pessoais, IPs públicos, tokens e chaves.
           required: true

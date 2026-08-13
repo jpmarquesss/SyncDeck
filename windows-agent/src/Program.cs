@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace SyncDeck.Agent
@@ -8,9 +9,14 @@ namespace SyncDeck.Agent
         [STAThread]
         private static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new AgentContext());
+            bool firstInstance;
+            using (Mutex instance = new Mutex(false, @"Local\SyncDeck.Agent.v1", out firstInstance))
+            {
+                if (!firstInstance) return;
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new AgentContext());
+            }
         }
     }
 }

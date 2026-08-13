@@ -1,0 +1,61 @@
+SYNCDECK NO IPHONE — INSTALAÇÃO GRATUITA SEM MAC
+
+COMPATIBILIDADE
+- iPhone 11 Pro ou mais recente com iOS 15 ou superior.
+- PC Windows 10/11.
+- A conta gratuita da Apple assina o aplicativo por 7 dias.
+
+PARTE 1 — GERAR O IPA NO GITHUB
+1. Envie o repositório SyncDeck 0.5.0 ao GitHub.
+2. Abra o repositório no navegador.
+3. Entre em Actions.
+4. Abra Validate and build.
+5. Clique em Run workflow e confirme.
+6. Aguarde o trabalho iPhone unsigned IPA ficar verde.
+7. Abra a execução concluída.
+8. Em Artifacts, baixe SyncDeck-iOS-unsigned.
+9. Extraia o ZIP. Dentro estará SyncDeck-unsigned.ipa.
+
+PARTE 2 — PREPARAR O WINDOWS
+1. Para reduzir riscos, crie uma conta Apple secundária somente para assinar o SyncDeck.
+2. Ative a autenticação de dois fatores nessa conta.
+3. Baixe iTunes e iCloud diretamente dos sites oficiais da Apple, não da Microsoft Store, se a ferramenta de instalação solicitar.
+4. Instale o Sideloadly somente pelo endereço oficial: https://sideloadly.io/
+5. Conecte o iPhone ao PC por USB e toque em Confiar quando solicitado.
+
+PARTE 3 — INSTALAR
+1. Abra o Sideloadly.
+2. Selecione o seu iPhone.
+3. Arraste SyncDeck-unsigned.ipa para a janela.
+4. Informe a conta Apple secundária usada para assinatura.
+5. Inicie a instalação e conclua a autenticação solicitada pela Apple.
+6. No iPhone, se necessário, abra Ajustes > Geral > VPN e Gerenciamento de Dispositivo.
+7. Autorize o desenvolvedor correspondente à conta usada.
+8. Em versões recentes do iOS, ative o Modo Desenvolvedor em Ajustes > Privacidade e Segurança se o sistema exigir e reinicie o iPhone.
+9. Abra o SyncDeck e permita Rede Local.
+
+PARTE 4 — PAREAR
+1. No Windows, clique no ícone do SyncDeck ao lado do relógio.
+2. Escolha Parear celular e gere o código.
+3. No iPhone, toque em ... e informe o IP e a porta mostrados no Windows.
+4. Toque em Verificar PC.
+5. Compare a impressão digital nas duas telas.
+6. Digite o código de 6 números e toque em Parear iPhone.
+
+RENOVAÇÃO A CADA 7 DIAS
+1. Antes de expirar, conecte novamente o iPhone ao Windows.
+2. Abra o Sideloadly e instale o mesmo IPA usando a mesma conta.
+3. Instale por cima. Não apague o SyncDeck do iPhone.
+4. Se trocar a conta de assinatura, o identificador do app ou apagar o aplicativo, pode ser necessário parear novamente.
+
+SEGURANÇA
+- Não envie sua senha Apple, código de dois fatores ou IPA assinado a ninguém.
+- Nunca coloque credenciais Apple nos Secrets do GitHub para este fluxo gratuito.
+- Confirme que o arquivo veio do seu próprio repositório.
+- O IPA gerado no GitHub é intencionalmente sem assinatura; a assinatura ocorre no seu Windows.
+- Como este iPhone também é usado para bancos, desative o Modo Desenvolvedor depois se o SyncDeck deixar de ser necessário.
+
+LIMITES
+- A assinatura gratuita expira em 7 dias por regra da Apple.
+- Wake-on-LAN liga o PC apenas quando o iPhone está na mesma rede local.
+- O agente do Windows precisa estar em execução para abrir, focar ou fechar janelas.

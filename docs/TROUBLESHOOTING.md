@@ -1,96 +1,124 @@
 # Solução de problemas
 
-## O Android Studio não gera o APK
+## O app abre e fecha no Android
 
-### Cannot create mockable android.jar
+1. No Android Studio, selecione o aparelho e abra **Logcat**.
+2. Filtre por `package:com.syncdeck.app level:ERROR`.
+3. Procure a primeira linha `Caused by` e abra o arquivo/linha apontado.
+4. Confirme que instalou o APK 1.0.0 gerado do código atual.
 
-Se o erro apontar para <code>platforms\android-36\android.jar</code>, a plataforma do SDK provavelmente está corrompida:
+Se veio de uma versão antiga assinada por outra chave, desinstale antes de instalar. Isso apaga o pareamento apenas do celular; o agente preserva seus botões.
 
-1. Abra **Settings > Languages & Frameworks > Android SDK**.
-2. Em **SDK Platforms**, remova Android API 36.0.
-3. Aplique a remoção.
-4. Marque novamente API 36.0 e reinstale.
-5. Confirme Android SDK Build-Tools, Platform-Tools e Command-line Tools.
-6. Use **File > Invalidate Caches / Restart**.
+## Gradle não encontra `android.jar`
 
-### JDK incompatível
+No Android Studio, abra **Settings > Languages & Frameworks > Android SDK**:
 
-Configure o Gradle JDK como 17. O projeto usa Android Gradle Plugin 9 e Java 17.
+1. desmarque a plataforma Android 16/API 36 com erro e aplique;
+2. marque novamente **Android SDK Platform 36**;
+3. em **SDK Tools**, confirme Build-Tools, Platform-Tools e Command-line Tools;
+4. use **File > Invalidate Caches / Restart** e sincronize o Gradle.
 
-## O aplicativo abre e fecha
+O projeto exige JDK 17, AGP 9.0.1, Gradle 9.1 e SDK 36.
 
-Abra o Logcat e procure a primeira linha <code>Caused by</code>. A falha conhecida de <code>WindowInsetsController</code> no Android 11 foi corrigida na 0.2.1. Confirme que a versão instalada é 0.3.1 ou superior.
+## “Use um endereço privado”
 
-## Precisa parear novamente depois de reiniciar o PC
+Digite apenas o IPv4 do PC, normalmente `192.168.x.x` ou `10.x.x.x`, sem `http://`, barra ou nome do computador. A porta padrão é `47321`.
 
-A partir da versão 0.3.1, o app guarda a impressão digital do agente e procura automaticamente o mesmo PC se o roteador mudar seu IP. A primeira tentativa pode levar até cerca de sete segundos.
+No Windows:
 
-1. Atualize o agente do Windows e o APK para 0.3.1.
-2. Instale o APK por cima do atual; não desinstale.
-3. Abra o app uma vez enquanto a conexão atual ainda funciona, para registrar a impressão digital.
-4. Confirme que o agente inicia com o Windows.
+```cmd
+ipconfig
+```
 
-O Windows também mantém uma cópia de segurança de <code>clients.json</code>. Se o APK for desinstalado, assinado com outra chave ou os celulares forem revogados no agente, um novo pareamento será necessário.
+Use o IPv4 da Ethernet conectada ao mesmo roteador do Wi-Fi do celular. VPN, rede de convidados e isolamento de clientes podem impedir a conexão.
 
-## O Android pede endereço privado
+## PC não conecta depois de reiniciar
 
-Use o endereço exibido em **SyncDeck > Status e conexão**, normalmente começando por:
+Execute uma vez:
 
-- <code>192.168.</code>
-- <code>10.</code>
-- <code>172.16.</code> até <code>172.31.</code>
+```cmd
+windows-agent\Instalar-no-Windows.bat
+```
 
-Não use IP público, endereço de site ou IP de VPN.
+Esse script instala em `%LOCALAPPDATA%\SyncDeck\Agent`, registra o início automático e inicia a cópia permanente. Evite executar o agente dentro de Downloads, pois a pasta pode ser movida ou removida.
 
-## PC indisponível
+Depois do login, confira:
 
-1. Confirme a mesma rede Wi-Fi.
-2. Confirme que o agente está próximo ao relógio.
-3. Verifique IP e porta.
-4. Configure a rede do Windows como **Privada**.
-5. Execute <code>Configurar-Firewall.bat</code> como administrador.
-6. Evite rede de convidados, que costuma bloquear dispositivos entre si.
+```cmd
+tasklist /FI "IMAGENAME eq SyncDeckAgent.exe"
+netstat -ano | findstr :47321
+```
 
-## O ícone não aparece
+O resultado esperado é uma única instância e `0.0.0.0:47321 LISTENING`. Muitas linhas `TIME_WAIT` são conexões curtas normais do polling.
 
-1. Atualize agente e APK para a mesma versão.
-2. Abra o programa uma vez no Windows.
-3. Toque em <code>↻</code>.
-4. Confira Destino, Processos e Nome no Menu Iniciar.
-5. Aguarde a primeira extração; depois o ícone fica em cache.
+## O agente mostra que não pode iniciar na porta
 
-## O cartão não fica luminoso
+Já existe outra instância ou processo usando `47321`.
 
-- A versão 0.3.1 precisa estar instalada nas duas partes.
-- O programa precisa possuir uma janela visível; processo em segundo plano não conta.
-- Aguarde cerca de três segundos.
-- Confira o nome do processo sem <code>.exe</code>.
-- Para programas elevados, execute o agente com o nível necessário apenas se compreender o risco.
+```cmd
+netstat -ano | findstr :47321
+tasklist /FI "PID eq NUMERO_ENCONTRADO"
+```
 
-## Não consegue fechar
+Feche a instância antiga, execute o instalador permanente e confirme que só um `SyncDeckAgent.exe` ficou ativo. O agente 1.0 também usa mutex para impedir duplicatas.
 
-- Marque **Pode fechar** no botão.
-- Confira o processo configurado.
-- O SyncDeck envia <code>WM_CLOSE</code>, não força o processo.
-- Aplicativos elevados podem recusar mensagens de um agente não elevado.
-- O programa pode pedir confirmação para salvar.
+## Celular perde o pareamento no dia seguinte
 
-## Chrome mostra seletor de contas
+O Android guarda o segredo no Keystore e o agente mantém uma cópia DPAPI com backup. Ele também procura o mesmo fingerprint se o IP mudar.
 
-1. Atualize o agente para 0.3.1.
-2. Abra o perfil desejado manualmente uma vez.
-3. Feche a janela e abra pelo SyncDeck.
-4. Confira se o botão usa <code>chrome.exe</code> e processo <code>chrome</code>.
+Se ainda falhar:
 
-Se o botão já possui <code>--profile-directory</code> em Argumentos, esse valor manual tem prioridade.
+1. confirme que Android e agente são 1.0.0;
+2. não limpe dados do app nem use otimizador que apague armazenamento;
+3. confira se `%LOCALAPPDATA%\SyncDeck\clients.json` e `clients.backup.json` existem;
+4. use o instalador permanente do agente;
+5. toque em atualizar e aguarde até sete segundos pela busca de IP.
 
-## APK não instala por cima
+Só despareie depois dessas verificações.
 
-O Android exige a mesma assinatura. Isso acontece ao gerar o APK em outro computador/keystore. Opções:
+## Firewall ou rede privada
 
-- voltar a assinar com a chave original; ou
-- desinstalar e instalar novamente, sabendo que o pareamento local será removido.
+Execute `Configurar-Firewall.bat` como administrador. Em **Configurações > Rede e Internet > Ethernet**, mantenha o perfil como **Privada**. A regra foi criada para TCP/47321, programa instalado e `remoteip=localsubnet`.
 
-## Porta ocupada
+Não crie redirecionamento da porta no roteador e não use o app por IP público.
 
-Outra instância ou programa pode estar usando <code>47321</code>. Encerre instâncias antigas no Gerenciador de Tarefas. Se mudar a porta em configuração, ajuste também o Firewall e o Android.
+## Programa abre, mas não fica marcado como aberto
+
+O agente conta janelas visíveis, não apenas processos. Edite o botão e revise:
+
+- `ProcessNames`, sem `.exe`;
+- `AppNames`, como aparece no Menu Iniciar;
+- destino correto do executável;
+- se o app é hospedado por `ApplicationFrameHost` ou `WindowsTerminal`.
+
+Feche e abra o programa uma vez, toque em atualizar e confira se existe uma janela normal na mesma sessão do usuário.
+
+## O botão não consegue fechar
+
+O fechamento usa `WM_CLOSE`; aplicativos elevados, caixas modais, janelas de outra sessão ou programas que ignoram esse pedido podem recusar. Execute o agente e o programa no mesmo usuário e nível de privilégio. O SyncDeck não força `taskkill` para evitar perda de dados.
+
+## Chrome pede para escolher conta/perfil
+
+Abra manualmente o perfil desejado uma vez e feche o Chrome normalmente. O agente usa, nesta ordem, uma janela Chrome já aberta, `last_active_profiles`, `last_used` e `Default`.
+
+Remova qualquer argumento `--profile-directory` incorreto do botão. Um argumento manual sempre tem prioridade.
+
+## Adicionar programa não lista o aplicativo
+
+O catálogo consulta App Paths e Menu Iniciar. Se um programa portátil não aparecer, use **Pasta ou arquivo > Escolher arquivo no PC** e selecione o `.exe`. O PC cria um token confiável sem expor navegação de arquivos ao celular.
+
+## Comando foi negado
+
+Isso é esperado até autorizar também na janela do PC. Confira destino, argumentos, diretório e celular solicitante. Enter, fechar a janela ou esperar 45 segundos significa **Negar**.
+
+Se nenhuma janela apareceu, desbloqueie a sessão do Windows e confirme que o ícone do agente está perto do relógio.
+
+## Wake-on-LAN não liga o PC
+
+Siga [WAKE-ON-LAN.md](WAKE-ON-LAN.md). Confirme BIOS/UEFI, Magic Packet no driver, gerenciamento de energia, inicialização rápida e LED da porta Ethernet após desligar.
+
+O botão só aparece offline depois que o app sincronizou a configuração ao menos uma vez com o PC ligado.
+
+## Ainda não resolveu
+
+Abra uma issue com versão, Windows/Android, passos e mensagem exata. Remova IP, MAC, fingerprint, código de pareamento, caminhos pessoais e capturas bancárias. Vulnerabilidades devem seguir [SECURITY.md](../SECURITY.md), sem issue pública.

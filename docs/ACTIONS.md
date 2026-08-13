@@ -1,6 +1,6 @@
 # Modelo de ações
 
-As ações são armazenadas no Windows e identificadas por um ID. O Android recebe somente os campos necessários para exibir e executar o botão; a configuração completa é enviada apenas quando o editor é aberto.
+As ações são armazenadas no Windows e identificadas por um ID. O painel recebe somente os campos necessários para exibir e executar o botão; a configuração completa é enviada apenas quando o editor é aberto.
 
 ## Campos
 
@@ -105,11 +105,23 @@ Variáveis de ambiente são expandidas no Windows.
 }
 ~~~
 
-Comandos são sempre forçados para <code>Confirm: true</code>. O executável e os argumentos ficam em campos separados; o agente não concatena dados recebidos em um shell.
+Comandos são sempre forçados para <code>Confirm: true</code>. O executável e os argumentos ficam em campos separados; o agente não concatena dados recebidos em um shell. Salvar/alterar e cada execução precisam de aprovação independente no desktop, além da confirmação no Android.
 
 ## Atalho
 
-<code>hotkey</code> usa a sintaxe de <code>System.Windows.Forms.SendKeys</code>. Exemplo: <code>^+{ESC}</code>.
+<code>hotkey</code> usa a sintaxe de <code>System.Windows.Forms.SendKeys</code>. Exemplo: <code>^+{ESC}</code>. Recebe as mesmas confirmações obrigatórias de um comando.
+
+## Origem confiável e aprovação
+
+Programas retornados pelo catálogo e caminhos escolhidos no seletor do Windows recebem um `SelectionToken`. Ele expira em cinco minutos, vale uma vez e está vinculado ao celular, tipo e destino exatos. Adicionar argumentos, diretório de trabalho ou fallback invalida essa confiança.
+
+O agente mostra uma confirmação no PC quando:
+
+- um programa/caminho não veio de uma seleção confiável;
+- uma ação muda tipo, destino, argumentos, diretório de trabalho ou fallback sensível;
+- um comando ou atalho é criado, alterado ou executado.
+
+Enter, fechar a janela, negar ou aguardar 45 segundos não autoriza a ação.
 
 ## Correspondência de janela
 
@@ -173,4 +185,4 @@ Para ações do tipo <code>url</code>, o argumento especial <code>chrome</code> 
 }
 ~~~
 
-O Android exibe um aviso específico antes de executar. O agente também recusa o comando se a confirmação autenticada não estiver presente.
+O Android exibe um aviso específico antes de executar. Em seguida, o Windows mostra `shutdown.exe` e `/s /t 5`; somente o botão **Autorizar uma vez** inicia o desligamento.

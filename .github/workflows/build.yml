@@ -21,7 +21,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Validate files and protocol
-        run: python3 scripts/validate_repository.py
+        run: |
+          python3 scripts/validate_repository.py
+          mkdir -p build/protocol-test
+          javac tests/ProtocolVectorTest.java -d build/protocol-test
+          java -cp build/protocol-test ProtocolVectorTest
 
   android:
     name: Android debug APK
@@ -42,10 +46,10 @@ jobs:
           cache-dependency-path: |
             android-app/**/*.gradle
             android-app/gradle/wrapper/gradle-wrapper.properties
-      - name: Build debug APK
+      - name: Test, lint and build Android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleDebug
+          ./gradlew --no-daemon testDebugUnitTest lintRelease assembleDebug bundleRelease
       - name: Prepare artifact
         run: cp app/build/outputs/apk/debug/app-debug.apk SyncDeck-debug.apk
       - name: Upload Android artifact
@@ -73,7 +77,51 @@ jobs:
           path: |
             windows-agent/SyncDeckAgent.exe
             windows-agent/Compilar-e-Iniciar.bat
+            windows-agent/Instalar-no-Windows.bat
             windows-agent/Configurar-Firewall.bat
             windows-agent/app.manifest
+          if-no-files-found: error
+          retention-days: 14
+
+  ios:
+    name: iPhone unsigned IPA
+    needs: validate
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Validate Swift protocol implementation
+        run: xcrun swift tests/ProtocolVectorTest.swift tests/protocol-vector.json
+      - name: Build iPhone application without signing
+        run: |
+          xcodebuild \
+            -project ios-app/SyncDeck.xcodeproj \
+            -scheme SyncDeck \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath ios-app/build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            clean build
+      - name: Package unsigned IPA
+        run: |
+          APP_PATH="ios-app/build/Build/Products/Release-iphoneos/SyncDeck.app"
+          test -d "$APP_PATH"
+          mkdir -p ios-app/package/Payload
+          cp -R "$APP_PATH" ios-app/package/Payload/SyncDeck.app
+          cd ios-app/package
+          /usr/bin/zip -qry ../SyncDeck-unsigned.ipa Payload
+          cd ..
+          shasum -a 256 SyncDeck-unsigned.ipa > SyncDeck-unsigned.ipa.sha256
+      - name: Upload iPhone artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SyncDeck-iOS-unsigned
+          path: |
+            ios-app/SyncDeck-unsigned.ipa
+            ios-app/SyncDeck-unsigned.ipa.sha256
           if-no-files-found: error
           retention-days: 14

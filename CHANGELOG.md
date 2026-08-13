@@ -2,6 +2,75 @@
 
 Todas as mudanças relevantes do SyncDeck são registradas neste arquivo. O projeto segue [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [1.0.0] - 2026-08-12
+
+### Adicionado
+
+- Novo assistente visual para criar botões escolhendo **Programa**, **Site**, **Pasta ou arquivo** ou **Comando**.
+- Catálogo de programas instalado no Windows e seletores nativos de arquivo/pasta, sem digitar caminhos.
+- Aprovação obrigatória no PC ao cadastrar, alterar ou executar comandos e atalhos sensíveis.
+- Protocolo de segurança v2 com conteúdo cifrado, respostas autenticadas, limite de requisições e confirmação visual detalhada.
+- Geração de Android App Bundle, exemplo de configuração da chave de upload e documentação completa para a Play Store.
+- Ícone adaptativo, tema monocromático e materiais iniciais para a listagem pública.
+- Instalador simples do agente em uma pasta permanente do perfil do Windows.
+
+### Alterado
+
+- Aplicativo Android totalmente migrado de Java/View para Kotlin e Jetpack Compose.
+- Interface redesenhada com glass, gradiente, feedback de estado, animações e navegação mais clara.
+- Android atualizado para <code>compileSdk</code>/<code>targetSdk 36</code>, AGP 9.0.1, Kotlin 2.2.10 e Java 17.
+- O aplicativo Android agora usa apenas a permissão <code>INTERNET</code> e continua limitado por código a endereços IPv4 privados.
+- O agente passa a aceitar no máximo 16 conexões simultâneas e 120 solicitações autenticadas por minuto por dispositivo.
+
+### Segurança
+
+- Segredo de pareamento mantido no Android Keystore e no Windows DPAPI.
+- AES-256-CBC com chave derivada por HMAC e HMAC-SHA-256 sobre o conteúdo cifrado, em esquema cifrar-e-autenticar.
+- Tokens curtos e descartáveis vinculam escolhas feitas pelo catálogo do PC ao botão salvo.
+- Campos de execução e confirmações bloqueiam caracteres de controle e exibem os valores completos no PC.
+- A tecla Enter nega a confirmação sensível por padrão, reduzindo aprovações acidentais.
+
+## [0.5.0] - 2026-08-12
+
+### Adicionado
+
+- Aplicativo nativo para iPhone em Swift e SwiftUI, compatível com iOS 15 ou superior.
+- Todas as funções do Android no iPhone: pareamento, ações, editor, ícones do Windows, estado das janelas, fechamento múltiplo, rotação e Wake-on-LAN.
+- Armazenamento do segredo do iPhone no Keychain, separado do pareamento Android.
+- Projeto Xcode completo, ícone em todos os tamanhos exigidos e suporte ao iPhone 11 Pro.
+- Build macOS no GitHub Actions que produz o artefato <code>SyncDeck-unsigned.ipa</code> sem guardar conta, senha, certificado ou perfil da Apple.
+- Guia de instalação gratuita pelo Windows e renovação semanal da assinatura pessoal.
+
+### Alterado
+
+- Documentação, arquitetura, testes e release agora cobrem Android, iOS e Windows.
+- O mesmo agente Windows aceita simultaneamente celulares Android e iPhones pareados.
+
+### Segurança
+
+- O iOS valida a impressão digital RSA e todas as respostas HMAC antes de usar JSON ou ícones.
+- A permissão de Rede Local explica exatamente a comunicação com o agente e o Wake-on-LAN.
+- Nenhuma credencial Apple é incluída no repositório ou no GitHub Actions.
+
+## [0.4.0] - 2026-08-12
+
+### Adicionado
+
+- Botão local **Ligar PC** por Wake-on-LAN, disponível mesmo quando o agente Windows está offline.
+- Descoberta autenticada do MAC, broadcast e interface Ethernet realmente usada pela conexão.
+- Envio redundante do Magic Packet para broadcasts da rede atual e configuração salva.
+- Guia completo de BIOS/UEFI, Realtek, Inicialização Rápida e diagnóstico do estado S5.
+
+### Alterado
+
+- Ao não localizar o agente, o Android mantém o painel funcional com o botão de ligar em vez de esconder todas as ações.
+- Quinze segundos após enviar o sinal, o app tenta localizar novamente o agente sem exigir novo pareamento.
+
+### Segurança
+
+- A configuração Wake-on-LAN é disponibilizada somente após autenticação HMAC e resposta assinada.
+- MAC e broadcast são validados e salvos localmente; nenhuma porta externa ou serviço em nuvem é usado.
+
 ## [0.3.1] - 2026-08-12
 
 ### Adicionado

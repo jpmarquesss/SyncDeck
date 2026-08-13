@@ -1,0 +1,55 @@
+SYNCDECK 0.4.0 — COMO ATUALIZAR E ATIVAR “LIGAR PC”
+
+IMPORTANTE
+- Não desinstale o app atual do Android.
+- Instale o novo APK por cima para preservar o pareamento.
+- Atualize agente Windows e APK juntos.
+
+NO WINDOWS
+1. Extraia o pacote 0.4.0 em uma pasta nova.
+2. Abra windows-agent.
+3. Execute Compilar-e-Iniciar.bat.
+4. O agente antigo será fechado, recompilado e iniciado na versão 0.4.0.
+5. Execute Configurar-Firewall.bat como administrador se ainda não fez isso.
+6. No ícone do SyncDeck perto do relógio, abra Status e conexão e confira a versão 0.4.0.
+
+NO ANDROID
+1. Abra android-app no Android Studio.
+2. Execute Gerar-APK.bat.
+3. Instale android-app\SyncDeck.apk por cima da versão existente.
+4. Abra o SyncDeck enquanto o PC está ligado.
+5. Toque em atualizar (↻) e aguarde “Conectado ao PC”.
+6. O botão Ligar PC aparecerá automaticamente. O MAC não precisa ser digitado.
+
+PARA LIGAR APÓS DESLIGAMENTO TOTAL
+1. Na BIOS, habilite Wake on LAN, Power On By PCI-E, PME Event Wake Up ou nome equivalente.
+2. Desabilite ErP/EuP/Deep Sleep em S5, se essas opções existirem.
+3. No Gerenciador de Dispositivos, abra Realtek PCIe GbE Family Controller.
+4. Habilite Wake on Magic Packet e Shutdown Wake-On-Lan, se disponível.
+5. Em Gerenciamento de Energia, permita acordar o computador somente por Magic Packet.
+6. Desative a Inicialização Rápida nas Opções de Energia do Windows.
+7. Desligue o PC. O LED da porta Ethernet deve continuar aceso ou piscando.
+8. No Android, toque em Ligar PC e confirme.
+
+O PC precisa continuar ligado à tomada, com a fonte ativa e o cabo Ethernet conectado.
+O celular precisa estar no Wi-Fi do mesmo roteador; rede de convidados não funciona.
+O botão liga o hardware, mas não pula a tela de login, PIN ou BitLocker.
+
+GUIA COMPLETO E DIAGNÓSTICO
+docs\WAKE-ON-LAN.md
+
+SE O BOTÃO NÃO APARECER
+- Confirme versão 0.4.0 no agente e no app.
+- Com o PC ligado, toque em atualizar novamente.
+- Confirme que a conexão do SyncDeck está chegando pela placa Ethernet Realtek.
+
+SE O SINAL FOR ENVIADO MAS O PC NÃO LIGAR
+- Verifique se o LED Ethernet fica aceso após desligar.
+- Confira Wake/PME e ErP na BIOS.
+- Confira a Inicialização Rápida.
+- Execute como administrador:
+  powercfg /deviceenablewake "Realtek PCIe GbE Family Controller"
+  powercfg /devicequery wake_armed
+
+O resultado wake_from_any contendo Realtek PCIe GbE Family Controller é positivo,
+mas não garante sozinho o suporte da placa-mãe ao estado S5.

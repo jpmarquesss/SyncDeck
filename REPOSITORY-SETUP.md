@@ -6,10 +6,10 @@ O pacote já contém README, licença MIT, documentação, workflows, modelos de
 
 No GitHub, crie um repositório chamado `SyncDeck` com estas sugestões:
 
-- **Description:** `Use um celular Android como painel Stream Deck seguro para controlar um PC Windows pela rede local.`
+- **Description:** `Use um Android como painel seguro para controlar um PC Windows pela rede local.`
 - **Visibility:** Public.
 - Não marque criação automática de README, `.gitignore` ou licença, pois esses arquivos já existem.
-- **Topics:** `android`, `windows`, `stream-deck`, `remote-control`, `local-network`, `java`, `csharp`, `hmac`.
+- **Topics:** `android`, `kotlin`, `jetpack-compose`, `windows`, `stream-deck`, `remote-control`, `local-network`, `csharp`, `hmac`, `wake-on-lan`.
 
 ## 2. Publicar pelo script do Windows
 
@@ -28,7 +28,7 @@ Abra o Terminal na raiz do projeto e execute:
 ```powershell
 git init
 git add .
-git commit -m "feat: publica SyncDeck 0.3.1"
+git commit -m "feat: publica SyncDeck 1.0.0"
 git branch -M main
 git remote add origin https://github.com/SEU-USUARIO/SyncDeck.git
 git push -u origin main
@@ -51,6 +51,8 @@ Depois do primeiro envio:
 4. Proteja a branch `main`, exigindo o workflow de validação para Pull Requests.
 5. Para publicar binários, siga [docs/RELEASING.md](docs/RELEASING.md).
 
+O workflow valida o protocolo e cria Android debug, Android App Bundle de verificação, agente Windows e iOS experimental não assinado. Para instalar o último no iPhone, baixe <code>SyncDeck-iOS-unsigned</code> e siga [INSTALAR-NO-IPHONE.txt](INSTALAR-NO-IPHONE.txt).
+
 ## Antes de tornar público
 
 Execute:
@@ -59,4 +61,4 @@ Execute:
 python scripts/validate_repository.py
 ```
 
-Não envie `SyncDeck.apk`, `SyncDeckAgent.exe`, `local.properties`, keystores, arquivos `.env` ou a pasta `%LOCALAPPDATA%\SyncDeck`.
+Não envie `SyncDeck.apk`, `SyncDeckAgent.exe`, arquivos `.ipa`, perfis `.mobileprovision`, `local.properties`, `keystore.properties`, keystores, arquivos `.env` ou a pasta `%LOCALAPPDATA%\SyncDeck`.

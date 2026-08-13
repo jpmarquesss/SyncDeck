@@ -16,7 +16,7 @@ body:
     id: proposal
     attributes:
       label: Solução proposta
-      description: Descreva o comportamento desejado no Android e no Windows.
+      description: Descreva o comportamento desejado no Android/iPhone e no Windows.
     validations:
       required: true
   - type: textarea
@@ -26,7 +26,7 @@ body:
   - type: dropdown
     id: security
     attributes:
-      label: A mudança exige nova permissão Android ou acesso externo?
+      label: A mudança exige nova permissão móvel ou acesso externo?
       options:
         - Não
         - Talvez

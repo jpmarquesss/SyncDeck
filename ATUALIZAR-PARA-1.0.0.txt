@@ -1,0 +1,28 @@
+ATUALIZAR O SYNCDECK PARA 1.0.0
+================================
+
+Esta atualização troca o Android para Kotlin/Jetpack Compose e exige o agente
+Windows 1.0.0. O formato dos botões e o identificador do aplicativo foram
+mantidos.
+
+1. No PC, feche o agente antigo pelo ícone próximo ao relógio.
+2. Na nova pasta windows-agent, execute Compilar-e-Iniciar.bat.
+3. Execute Instalar-no-Windows.bat para mover o agente a um local permanente.
+4. Execute Configurar-Firewall.bat como administrador uma vez.
+5. Gere o APK com Gerar-APK.bat e instale por cima do aplicativo atual.
+6. Abra o SyncDeck e toque em atualizar.
+
+Se o APK novo estiver assinado pela mesma chave do APK instalado, o Android
+preserva endereço, pareamento e Wake-on-LAN. Não desinstale antes de tentar a
+atualização.
+
+MIGRAÇÃO PARA A PLAY STORE
+--------------------------
+
+Uma instalação de desenvolvimento normalmente usa a chave debug. A versão da
+Play Store usa a chave de assinatura do Google Play e não pode substituir esse
+APK debug. Nesse caso será necessário desinstalar a versão de desenvolvimento,
+instalar a versão oficial e parear uma única vez novamente.
+
+O agente 1.0 continua aceitando o cliente iOS experimental 0.5.0. O conteúdo do
+protocolo v2 criptografado é obrigatório no novo aplicativo Android.

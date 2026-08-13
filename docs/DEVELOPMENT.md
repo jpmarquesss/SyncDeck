@@ -1,107 +1,105 @@
 # Desenvolvimento
 
-## Preparação do Windows
+## Ambiente
 
-1. Instale Git para Windows.
-2. Ative .NET Framework 4.8 em **Recursos do Windows**.
-3. Instale Android Studio.
-4. Configure JDK 17.
-5. No SDK Manager, instale Android SDK Platform 36, Build-Tools e Platform-Tools.
-6. Instale Python 3 para validações locais.
+| Parte | Ferramentas |
+|---|---|
+| Android | Android Studio, JDK 17, Android SDK 36 |
+| Windows | Windows 10/11 e .NET Framework 4.8 |
+| Validação | Python 3 e JDK 17 |
+| iOS experimental | Xcode 16 em macOS ou GitHub Actions |
 
-## Clonar
+Abra `android-app`, e não a raiz inteira, no Android Studio.
 
-~~~powershell
+## Primeiro build
+
+```powershell
 git clone https://github.com/SEU-USUARIO/SyncDeck.git
 cd SyncDeck
 python scripts/validate_repository.py
-~~~
 
-Substitua a URL pelo endereço real após publicar.
-
-## Agente Windows
-
-O agente usa arquivos C# diretamente e o compilador do .NET Framework:
-
-~~~powershell
 windows-agent\build-agent.bat
-~~~
 
-Saída: <code>windows-agent\SyncDeckAgent.exe</code>.
-
-Para recompilar, encerrar uma instância antiga e iniciar:
-
-~~~powershell
-windows-agent\Compilar-e-Iniciar.bat
-~~~
-
-O script referencia apenas assemblies presentes no .NET Framework. Evite APIs exclusivas de .NET moderno.
-
-## Android
-
-Abra a pasta <code>android-app</code>, não a raiz inteira, no Android Studio.
-
-Build pelo terminal:
-
-~~~powershell
 cd android-app
-.\gradlew.bat assembleDebug
-~~~
+.\gradlew.bat testDebugUnitTest lintRelease assembleDebug
+```
 
-Saída padrão: <code>app\build\outputs\apk\debug\app-debug.apk</code>.
+Saídas:
 
-O script <code>Gerar-APK.bat</code> copia a saída para <code>android-app\SyncDeck.apk</code>.
+- agente: `windows-agent\SyncDeckAgent.exe`;
+- APK de teste: `android-app\app\build\outputs\apk\debug\app-debug.apk`;
+- AAB assinado: `android-app\app\build\outputs\bundle\release\app-release.aab`.
 
-## Build completo
+`Gerar-APK.bat` copia o APK para `android-app\SyncDeck.apk`. `Gerar-AAB.bat` exige `keystore.properties`; veja [PLAY-STORE.md](PLAY-STORE.md).
 
-~~~powershell
-powershell -ExecutionPolicy Bypass -File scripts\build-all.ps1
-~~~
+## Organização do Android
 
-Esse script valida o repositório, compila o agente e gera o APK debug.
+O aplicativo usa Kotlin 2.2.10 e Jetpack Compose, com estado centralizado em `DeckController`.
 
-## Alterar ações padrão
+- Mantenha a UI declarativa em `MainActivity.kt` e `ActionWizard.kt`.
+- Faça rede, disco e criptografia fora do thread principal.
+- Converta dados externos em modelos validados antes de atualizar o estado.
+- Preserve `minSdk 26` e teste retrato e paisagem.
+- Não adicione permissão, SDK de telemetria ou dependência sem atualizar privacidade, Data Safety e modelo de ameaça.
+- Não registre segredo, código de pareamento, caminhos, IP/MAC ou payload descriptografado.
 
-As ações iniciais ficam em <code>windows-agent/src/Stores.cs</code>, no método <code>CreateDefaults</code>. Mudanças afetam apenas instalações sem <code>actions.json</code>. Para migrar configurações existentes, implemente uma migração explícita e não sobrescreva personalizações do usuário.
+## Organização do agente
 
-## Adicionar uma rota
+O agente compila os arquivos de `windows-agent/src` diretamente com o compilador do .NET Framework.
 
-1. Defina modelos em <code>Models.cs</code>.
-2. Adicione a rota autenticada em <code>DeckServer.Route</code>.
-3. Imponha limites e validação antes de executar efeitos.
-4. Adicione o método correspondente em <code>ApiClient.java</code>.
-5. Atualize <code>docs/PROTOCOL.md</code>.
-6. Acrescente testes e casos manuais.
+```powershell
+windows-agent\build-agent.bat
+windows-agent\Instalar-no-Windows.bat
+```
 
-Rotas privadas devem ficar depois de <code>Authenticate</code>.
+Evite APIs exclusivas de .NET moderno. Efeitos do sistema devem passar por `ActionExecutor`; autorização, por `DeckServer`/`DesktopSecurity`; validação e persistência, pelos stores.
+
+## Adicionar ou alterar uma rota
+
+1. Defina modelos limitados em `windows-agent/src/Models.cs`.
+2. Adicione a rota depois de `Authenticate` em `DeckServer.cs`.
+3. Imponha limites antes de ler, desserializar ou executar.
+4. Adicione o método em `ApiClient.kt` e, se mantiver compatibilidade, em `ios-app/SyncDeck/APIClient.swift`.
+5. Atualize [PROTOCOL.md](PROTOCOL.md), vetores e matriz de testes.
+6. Para uma operação perigosa, inclua autorização explícita no Android e confirmação independente em `DesktopSecurity`.
+
+Nunca aceite comando arbitrário em `/api/execute`; a rota recebe apenas `ActionId` e operação.
 
 ## Alterar o protocolo
 
-- Preserve os nomes de propriedades existentes quando possível.
-- Nunca aceite nomes de executáveis ou comandos arbitrários vindos de <code>/api/execute</code>; use somente <code>ActionId</code>.
-- Atualize os vetores criptográficos caso a forma canônica mude.
-- Considere compatibilidade entre uma versão nova do APK e um agente antigo.
+- Preserve propriedades JSON existentes quando possível.
+- Incremente a versão do protocolo se alterar cifra, derivação, strings canônicas ou semântica de segurança.
+- Autentique o texto cifrado antes de descriptografá-lo.
+- Atualize `tests/protocol-vector.json` e `ProtocolVectorTest.java`.
+- Mantenha limites iguais nos dois lados e trate dados desconhecidos como não confiáveis.
+- Documente compatibilidade e migração; não faça downgrade silencioso no Android público.
+
+## Ações padrão
+
+As ações de uma instalação nova ficam em `ActionStore.CreateDefaults`, em `windows-agent/src/Stores.cs`. Não sobrescreva `actions.json` existente. Uma mudança de layout precisa de migração idempotente e marcador próprio.
 
 ## Versões
 
-Atualize em conjunto:
+Na versão pública Android/Windows, atualize em conjunto:
 
-- <code>android-app/app/build.gradle</code>: <code>versionCode</code> e <code>versionName</code>.
-- <code>windows-agent/src/DeckServer.cs</code>: versão pública do agente.
-- <code>windows-agent/app.manifest</code>: <code>assemblyIdentity</code>.
-- <code>CHANGELOG.md</code>.
+- `android-app/app/build.gradle`: `versionCode` e `versionName`;
+- `windows-agent/src/DeckServer.cs` e `AgentContext.cs`;
+- `windows-agent/app.manifest` e `src/AssemblyInfo.cs`;
+- `VERSION`, `README.md` e `CHANGELOG.md`.
 
-## Dados locais
+O iOS experimental pode ter versão própria, declarada no projeto Xcode e no seu README.
 
-Durante testes, o agente usa <code>%LOCALAPPDATA%\SyncDeck</code>. Faça backup antes de testar migrações. Nunca copie <code>clients.json</code> para o repositório.
+## Dados de teste
 
-Para testar primeiro uso, renomeie temporariamente a pasta local em vez de apagá-la.
+O agente usa `%LOCALAPPDATA%\SyncDeck`. Antes de testar migrações, faça backup. Para simular primeiro uso, renomeie temporariamente a pasta em vez de apagá-la.
 
-## Estilo e revisão
+Nunca coloque no Git:
 
-- Use C# compatível com o compilador do .NET Framework 4.8.
-- Use Java 17 e APIs Android respeitando <code>minSdk 26</code>.
-- Não faça rede no thread principal do Android.
-- Feche/disponha objetos Win32 e <code>Process</code>.
-- Trate títulos de janela como dados locais potencialmente sensíveis.
-- Prefira mudanças pequenas, validáveis e sem novas permissões.
+- `clients.json`, `actions.json` ou `settings.json` reais;
+- `local.properties`, `keystore.properties` ou chaves;
+- APK, AAB, EXE, IPA, PDB ou certificados;
+- IP, MAC, código de pareamento ou capturas com dados pessoais.
+
+## iPhone experimental
+
+O projeto SwiftUI exige iOS 15. Sem Mac, o workflow compila um IPA não assinado. Isso valida o código, mas não substitui assinatura Apple nem teste em aparelho real. Consulte [ios-app/README.md](../ios-app/README.md).

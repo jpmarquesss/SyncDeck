@@ -1,249 +1,185 @@
 # SyncDeck
 
-Use um celular Android como um painel Stream Deck para abrir, focar e fechar aplicativos em um PC Windows pela rede local.
+Transforme um celular Android em um painel moderno para abrir, focar e fechar programas, sites, pastas e comandos no Windows. A comunicação é direta na rede local: não existe conta SyncDeck, servidor em nuvem, anúncio ou telemetria.
 
-**Versão atual:** 0.3.1 · **Licença:** MIT · **Status:** beta funcional
+**Versão:** 1.0.0 · **Licença:** MIT · **Android:** Kotlin + Jetpack Compose · **Windows:** C#/.NET Framework 4.8
 
-> O SyncDeck foi pensado para funcionar sem nuvem: celular e computador se comunicam diretamente pela mesma rede Wi-Fi privada. O projeto não acessa aplicativos bancários, notificações, contatos, câmera, microfone ou arquivos do Android.
+> O aplicativo Android 1.0.0 está estruturado para publicação pública na Play Store. A publicação ainda exige uma conta de desenvolvedor, uma chave de upload, materiais da loja e os testes do proprietário descritos em [Publicar na Play Store](docs/PLAY-STORE.md).
 
-## Conteúdo
+## Destaques
 
-- [Recursos](#recursos)
-- [Como funciona](#como-funciona)
-- [Instalação rápida](#instalação-rápida)
-- [Uso](#uso)
-- [Adicionar aplicativos](#adicionar-aplicativos)
-- [Desenvolvimento](#desenvolvimento)
-- [Segurança e privacidade](#segurança-e-privacidade)
-- [Estrutura do repositório](#estrutura-do-repositório)
-- [Documentação](#documentação)
-
-## Recursos
-
-- Abre aplicativos, sites, pastas, arquivos, comandos e atalhos do Windows.
-- Traz para frente uma janela já aberta sem iniciar outra instância.
-- Detecta janelas visíveis reais, inclusive Explorer e aplicativos modernos.
-- Atualiza automaticamente o estado aberto/fechado no Android.
-- Exibe contorno luminoso quando o aplicativo está aberto.
-- Quando existem várias janelas, permite fechar somente uma ou todas.
-- Abre o Chrome diretamente no perfil ativo ou no último perfil utilizado.
-- Busca automaticamente o ícone real do aplicativo no PC.
-- Modo retrato para configuração e modo paisagem em tela cheia com três colunas.
-- Interface escura glass, gradiente discreto e animações.
-- Editor de botões no Android e no agente Windows.
-- Agente silencioso na bandeja e inicialização automática opcional.
-- Pareamento autenticado, respostas assinadas e proteção contra repetição.
-- Recupera automaticamente a conexão quando o roteador muda o IP do PC.
-- Inclui botões para abrir o ChatGPT no perfil atual do Chrome e desligar o PC com confirmação.
-- Funciona somente em IPv4 privado/local.
+- Painel retrato em duas colunas e paisagem em tela cheia com três colunas e somente logos.
+- Ícones reais extraídos automaticamente dos programas instalados no PC.
+- Janela aberta destacada por contorno luminoso e quantidade de janelas detectada em tempo real.
+- Toque para abrir ou trazer para frente; toque longo para editar; fechamento de uma ou todas as janelas.
+- Chrome aberto no perfil ativo ou no último perfil usado.
+- Wake-on-LAN para ligar um PC desligado pela rede cabeada.
+- Recuperação automática quando o roteador troca o IP do computador.
+- Assistente autoexplicativo para adicionar **Programa**, **Site**, **Pasta ou arquivo** ou **Comando**.
+- Confirmação no celular e também no PC para comandos e atalhos potencialmente perigosos.
 
 ## Como funciona
 
-~~~mermaid
+```mermaid
 flowchart LR
-    A["Android<br/>painel e editor"] <-->|"Wi-Fi local<br/>HTTP + HMAC"| B["Agente Windows<br/>porta 47321"]
-    B --> C["Janelas e processos"]
-    B --> D["Aplicativos, sites<br/>pastas e comandos"]
-    B --> E["Ícones instalados"]
-~~~
+    A["Android<br/>Kotlin + Compose"] <-->|"LAN privada<br/>conteúdo cifrado + HMAC"| B["Agente Windows<br/>porta 47321"]
+    B --> C["Programas e janelas"]
+    B --> D["Ícones e seletores"]
+    B --> E["Aprovação no PC"]
+```
 
-O Android envia apenas o identificador de uma ação previamente salva. O agente valida a autenticação, localiza a configuração e executa a ação no Windows.
-
-Mais detalhes estão em [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) e [docs/PROTOCOL.md](docs/PROTOCOL.md).
+O Windows mantém os botões e executa as ações. O Android mantém apenas o endereço do PC, o pareamento, o cache de ícones e a configuração Wake-on-LAN. Um novo celular precisa de código temporário e conferência da impressão digital mostrada nas duas telas.
 
 ## Requisitos
 
-### Windows
+| Componente | Requisito |
+|---|---|
+| Android | Android 8.0/API 26 ou superior |
+| Windows | Windows 10/11 e .NET Framework 4.8 |
+| Rede | Celular no Wi-Fi e PC no mesmo roteador; perfil de rede Windows **Privada** |
+| Compilação Android | Android Studio, JDK 17 e Android SDK 36 |
+| Wake-on-LAN | Ethernet cabeada, BIOS/UEFI e adaptador compatíveis com Magic Packet em S5 |
 
-- Windows 10 ou 11.
-- .NET Framework 4.8.
-- Rede configurada como **Privada**.
-
-### Android
-
-- Android 8.0/API 26 ou superior.
-- Celular conectado à mesma rede Wi-Fi privada do PC.
-
-### Para compilar
-
-- Android Studio.
-- JDK 17.
-- Android SDK Platform 36.
-- Git e Python 3 recomendados para desenvolvimento.
-
-## Instalação rápida
+## Instalação para desenvolvimento
 
 ### 1. Agente Windows
 
-1. Abra <code>windows-agent</code>.
-2. Execute <code>Compilar-e-Iniciar.bat</code>.
-3. Execute <code>Configurar-Firewall.bat</code> uma vez e confirme a elevação.
-4. Procure o ícone do SyncDeck próximo ao relógio.
-5. Clique com o botão direito e selecione **Parear celular**.
+1. Abra a pasta `windows-agent`.
+2. Execute `Compilar-e-Iniciar.bat`.
+3. Execute `Instalar-no-Windows.bat` para copiar o agente para `%LOCALAPPDATA%\SyncDeck\Agent` e ativar a inicialização automática.
+4. Execute `Configurar-Firewall.bat` uma vez como administrador. A regra aceita somente perfil privado e sub-rede local.
+5. Procure o escudo do SyncDeck próximo ao relógio do Windows.
 
-O agente compila para <code>windows-agent/SyncDeckAgent.exe</code>. Esse arquivo é ignorado pelo Git.
+O código não inclui um executável pronto no Git. O workflow do GitHub compila o agente e disponibiliza um artefato para testes. Antes de distribuir publicamente, assine o executável com um certificado de assinatura de código.
 
 ### 2. Aplicativo Android
 
-1. Abra <code>android-app</code> no Android Studio.
+1. Abra `android-app` no Android Studio.
 2. Aguarde a sincronização do Gradle.
-3. Execute <code>Gerar-APK.bat</code> ou use **Run**.
-4. O APK será copiado para <code>android-app/SyncDeck.apk</code>.
-5. Transfira o APK ao celular e instale-o.
-6. Desative novamente **Instalar apps desconhecidos**.
+3. Para teste, execute `Gerar-APK.bat` ou use **Run** no Android Studio.
+4. Instale `android-app/SyncDeck.apk` no aparelho.
+5. Desative novamente **Instalar apps desconhecidos** depois da instalação manual.
 
-Para atualizar sem perder o pareamento, gere e assine o APK no mesmo computador/keystore e instale por cima.
-
-Quem já usa a versão anterior deve seguir [ATUALIZAR-PARA-0.3.1.txt](ATUALIZAR-PARA-0.3.1.txt). A atualização aplica uma única vez o novo painel solicitado: remove Android Studio/Android App e Downloads, adiciona ChatGPT no Chrome e Desligar PC.
+Para migrar de uma versão anterior, leia [ATUALIZAR-PARA-1.0.0.txt](ATUALIZAR-PARA-1.0.0.txt).
 
 ### 3. Pareamento
 
-1. No Windows, abra **Parear celular**.
-2. No Android, toque em <code>•••</code>.
-3. Informe o IP privado e a porta exibidos no agente.
-4. Toque em **Verificar PC**.
-5. Compare a impressão digital nas duas telas.
-6. Digite o código de seis números.
+1. No ícone do agente, escolha **Parear celular**.
+2. No Android, toque em `•••` e informe o IP privado e a porta exibidos no PC.
+3. Toque em **Verificar PC**.
+4. Compare a impressão digital nas duas telas.
+5. Marque a confirmação e digite o código de seis números.
 
-O código expira em cinco minutos e possui limite de tentativas.
+O código expira em cinco minutos e é bloqueado após cinco tentativas. O segredo de 256 bits é gerado no celular, protegido pelo Android Keystore e armazenado no Windows com DPAPI.
 
-## Uso
+## Adicionar botões
 
-| Gesto/controle | Resultado |
+Toque em `＋` e escolha uma opção:
+
+| Opção | Experiência |
 |---|---|
-| Toque em um cartão | Abre o item ou traz sua janela para frente |
-| Botão <code>×</code> | Pede confirmação e fecha normalmente |
-| Várias janelas | Pergunta se deve fechar uma ou todas |
-| Toque longo em retrato | Abre o editor do botão |
-| Toque longo em paisagem | Abre o menu Abrir, Fechar ou Editar |
-| Botão <code>＋</code> | Adiciona uma ação |
-| Botão <code>↻</code> | Atualiza conexão, botões, ícones e estados |
-| Botão <code>•••</code> | Configura conexão e pareamento |
+| Programa | O agente lista os programas instalados; toque em um nome e a imagem será obtida automaticamente |
+| Site | Informe o endereço completo e escolha navegador padrão ou Chrome |
+| Pasta ou arquivo | Uma janela de seleção é aberta diretamente no PC; não é necessário digitar o caminho |
+| Comando | Informe executável e argumentos; salvar e executar sempre pedem autorização visível no PC |
 
-O indicador é atualizado aproximadamente a cada 2,4 segundos. Processos sem janela visível não são marcados como abertos.
+O passo final permite revisar o nome, a cor, a detecção da janela e a confirmação antes de abrir. As opções avançadas ficam recolhidas para não confundir quem só quer criar um botão comum.
 
-## Adicionar aplicativos
+## Gestos
 
-É possível adicionar pelo botão <code>＋</code> no Android ou por **Editar botões** no ícone da bandeja do Windows.
-
-| Campo | Exemplo para Android Studio |
+| Controle | Resultado |
 |---|---|
-| Nome | <code>Android Studio</code> |
-| Identificador | <code>android-studio</code> |
-| Tipo | <code>app</code> |
-| Destino | <code>C:\Program Files\Android\Android Studio\bin\studio64.exe</code> |
-| Processos | <code>studio64</code> |
-| Nomes no Menu Iniciar | <code>Android Studio</code> |
-| Cor | <code>#3DDC84</code> |
-| Pode fechar | Marcado |
-
-Para descobrir o executável, abra o programa, use <code>Ctrl + Shift + Esc</code>, acesse **Detalhes**, clique no processo e escolha **Abrir local do arquivo**.
-
-| Tipo | Destino esperado | Exemplo |
-|---|---|---|
-| <code>app</code> | Executável ou protocolo | <code>chrome.exe</code> |
-| <code>url</code> | URL HTTPS/HTTP | <code>https://example.com</code> |
-| <code>path</code> | Arquivo ou pasta | <code>%USERPROFILE%\Downloads</code> |
-| <code>command</code> | Executável; argumentos separados | <code>shutdown.exe</code> |
-| <code>hotkey</code> | Sintaxe de SendKeys | <code>^+{ESC}</code> |
-
-Ações <code>command</code> são sempre consideradas sensíveis e exigem confirmação.
-
-## Desenvolvimento
-
-### Validar
-
-~~~powershell
-python scripts/validate_repository.py
-~~~
-
-### Compilar o agente
-
-~~~powershell
-windows-agent\build-agent.bat
-~~~
-
-### Compilar o Android
-
-~~~powershell
-cd android-app
-.\gradlew.bat assembleDebug
-~~~
-
-### Compilar as duas partes
-
-~~~powershell
-powershell -ExecutionPolicy Bypass -File scripts\build-all.ps1
-~~~
-
-O GitHub Actions executa builds independentes para Windows e Android. O APK de CI usa assinatura de depuração temporária e serve para testes; releases atualizáveis devem usar uma chave privada estável.
-
-Leia [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md), [docs/TESTING.md](docs/TESTING.md), [docs/RELEASING.md](docs/RELEASING.md) e [CONTRIBUTING.md](CONTRIBUTING.md).
+| Toque no cartão | Abre ou traz a janela para frente |
+| `×` | Confirma e fecha normalmente com `WM_CLOSE` |
+| Toque longo | Abre ações e edição |
+| `＋` | Abre o assistente de novo botão |
+| `↻` | Atualiza PC, botões, ícones e estados |
+| `•••` | Conexão, pareamento e revogação local |
+| Ligar PC | Envia Magic Packet local após confirmação |
 
 ## Segurança e privacidade
 
-### Permissões Android
+O Android solicita somente a permissão `INTERNET`, necessária também para conexões com endereços privados. O código recusa endereços que não sejam IPv4 privados ou link-local.
 
-- <code>INTERNET</code>
-- <code>ACCESS_NETWORK_STATE</code>
-- <code>VIBRATE</code>
+Proteções principais:
 
-Não são solicitados SMS, contatos, armazenamento, câmera, microfone, notificações, localização ou acessibilidade.
+- conferência visual da chave pública durante o pareamento;
+- código temporário limitado por tempo e tentativas;
+- segredo aleatório de 256 bits, Android Keystore e Windows DPAPI;
+- AES-256-CBC com chave derivada e HMAC-SHA-256 sobre o conteúdo cifrado;
+- autenticação das respostas antes de interpretar JSON ou imagens;
+- timestamp, nonce, comparação em tempo constante e limite de requisições;
+- tokens descartáveis vinculando seleções feitas no PC ao botão salvo;
+- aprovação no desktop com dispositivo, IP, destino, argumentos e diretório completos;
+- firewall restrito à sub-rede local e servidor restrito a IPv4 privado;
+- nenhuma coleta de contatos, SMS, arquivos do celular, câmera, microfone, localização ou dados bancários.
 
-### Proteções
+O protocolo usa HTTP local porque o agente não depende de certificado ou servidor externo, mas o conteúdo autenticado do Android é cifrado antes de ser enviado. Wake-on-LAN é uma exceção do próprio padrão: o Magic Packet não é autenticado e deve permanecer na rede privada.
 
-- Rede limitada a IPv4 privado/local.
-- Pareamento RSA de 2048 bits com conferência da impressão digital.
-- Segredo de 256 bits criado no Android.
-- HMAC-SHA-256 em todas as requisições autenticadas e respostas.
-- Timestamp e nonce contra repetição.
-- Android Keystore/AES-GCM no celular.
-- Windows DPAPI no perfil do usuário.
-- Fechamento normal por <code>WM_CLOSE</code>; o agente não mata processos.
-- Limites de tamanho e dimensão para ícones.
+Consulte [Segurança](SECURITY.md), [Política de privacidade](PRIVACY-POLICY.md) e [Protocolo](docs/PROTOCOL.md).
 
-O transporte local usa HTTP autenticado, mas não cifrado. Um observador da mesma rede pode ver metadados como nomes, imagens e estado dos botões. Use somente rede privada confiável. Títulos das janelas não são enviados ao Android.
+## Publicação na Play Store
 
-Leia [SECURITY.md](SECURITY.md).
+O projeto já inclui:
 
-## Estrutura do repositório
+- `targetSdk 36`, `versionCode 10` e pacote `com.syncdeck.app`;
+- build de release com R8 e redução de recursos;
+- suporte opcional a chave de upload em `keystore.properties`;
+- `Gerar-AAB.bat` para criar o Android App Bundle;
+- ícone adaptativo e monocromático;
+- texto da listagem, modelo de Data Safety e política de privacidade;
+- CI para teste, lint, APK, AAB e agente Windows.
 
-- <code>android-app/</code>: aplicativo Android nativo em Java.
-- <code>windows-agent/</code>: agente Windows em C#/.NET Framework.
-- <code>tests/</code>: vetores criptográficos compartilhados.
-- <code>scripts/</code>: validação e build para desenvolvedores.
-- <code>docs/</code>: arquitetura, protocolo, testes, releases e troubleshooting.
-- <code>.github/</code>: workflows, Dependabot e modelos comunitários.
+Antes do primeiro upload, confirme que o identificador `com.syncdeck.app` está disponível e é o identificador permanente desejado. Siga a lista completa em [docs/PLAY-STORE.md](docs/PLAY-STORE.md).
+
+## Desenvolvimento
+
+```powershell
+# Validar estrutura, versões, políticas e vetores criptográficos
+python scripts/validate_repository.py
+
+# Android
+cd android-app
+.\gradlew.bat testDebugUnitTest lintRelease assembleDebug bundleRelease
+
+# Windows
+windows-agent\build-agent.bat
+```
+
+O Android usa AGP 9.0.1, Kotlin 2.2.10, Jetpack Compose e Java 17. O agente usa somente APIs do .NET Framework incluídas no Windows. Os workflows também compilam o projeto iOS experimental em um executor macOS.
+
+## Aplicativo iOS experimental
+
+A pasta `ios-app` preserva o cliente SwiftUI 0.5.0 para iOS 15 e iPhone 11 Pro. Ele pode ser compilado pelo GitHub sem assinatura e instalado pelo Windows com uma assinatura pessoal, conforme [INSTALAR-NO-IPHONE.txt](INSTALAR-NO-IPHONE.txt). O foco de publicação 1.0.0 é o aplicativo Android; o cliente iOS ainda não é uma distribuição oficial da App Store.
+
+## Estrutura
+
+- `android-app/`: Kotlin, Jetpack Compose, Gradle e recursos Android.
+- `windows-agent/`: agente C#, catálogo de programas, aprovação e integração Win32.
+- `ios-app/`: cliente SwiftUI experimental.
+- `tests/`: vetores determinísticos do protocolo.
+- `scripts/`: validação, build e empacotamento.
+- `docs/`: arquitetura, protocolo, ações, testes, releases e publicação.
+- `store-assets/`: materiais não secretos para a listagem.
 
 ## Documentação
 
 | Documento | Conteúdo |
 |---|---|
-| [Arquitetura](docs/ARCHITECTURE.md) | Componentes, responsabilidades e fluxos |
-| [Ações](docs/ACTIONS.md) | Campos, validação e exemplos |
-| [Protocolo](docs/PROTOCOL.md) | Rotas, autenticação e estruturas JSON |
-| [Desenvolvimento](docs/DEVELOPMENT.md) | Ambiente e fluxo de trabalho |
-| [Testes](docs/TESTING.md) | Validação automática e matriz manual |
-| [Releases](docs/RELEASING.md) | Versões, assinatura e publicação |
-| [Troubleshooting](docs/TROUBLESHOOTING.md) | Erros conhecidos e diagnóstico |
-| [Changelog](CHANGELOG.md) | Histórico de versões |
-| [Roadmap](ROADMAP.md) | Melhorias planejadas |
-| [Publicação no GitHub](REPOSITORY-SETUP.md) | Primeiro push e configurações |
+| [Arquitetura](docs/ARCHITECTURE.md) | Componentes, confiança e fluxos |
+| [Ações](docs/ACTIONS.md) | Tipos e validações dos botões |
+| [Protocolo](docs/PROTOCOL.md) | Pareamento, criptografia e rotas |
+| [Desenvolvimento](docs/DEVELOPMENT.md) | Ambiente e contribuição |
+| [Testes](docs/TESTING.md) | CI e matriz manual |
+| [Releases](docs/RELEASING.md) | Versionamento e artefatos |
+| [Play Store](docs/PLAY-STORE.md) | AAB, assinatura e Console |
+| [Data Safety](docs/DATA-SAFETY.md) | Respostas propostas para o formulário |
+| [Texto da loja](docs/STORE-LISTING.md) | Nome, descrições e imagens |
+| [Wake-on-LAN](docs/WAKE-ON-LAN.md) | BIOS, Realtek e diagnóstico |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Erros e soluções |
 
-## Compatibilidade
+## Contribuição e licença
 
-| Componente | Versão mínima |
-|---|---|
-| Android | 8.0 / API 26 |
-| Target Android | API 36 |
-| Java | 17 |
-| Windows | 10 |
-| .NET Framework | 4.8 |
+Issues e Pull Requests são bem-vindos. Leia [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) e [SECURITY.md](SECURITY.md).
 
-## Contribuição
-
-Issues e Pull Requests são bem-vindos. Leia [CONTRIBUTING.md](CONTRIBUTING.md) e [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
-
-## Licença
-
-SyncDeck é distribuído sob a [Licença MIT](LICENSE). Copyright © 2026 Erick Carmo.
+Distribuído sob a [Licença MIT](LICENSE). Copyright © 2026 Erick Carmo.

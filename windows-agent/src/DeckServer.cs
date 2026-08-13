@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -15,27 +14,33 @@ namespace SyncDeck.Agent
     public sealed class DeckServer : IDisposable
     {
         private const int MaxRequestBytes = 65536;
+        private const string EncryptionProtocol = "aes-256-cbc-v1";
         private readonly int _port;
         private readonly ActionStore _actions;
         private readonly ClientStore _clients;
         private readonly PairingManager _pairing;
+        private readonly DesktopSecurity _desktop;
         private readonly ActionExecutor _executor = new ActionExecutor();
         private readonly IconResolver _icons = new IconResolver();
+        private readonly CatalogService _catalog = new CatalogService();
         private readonly JavaScriptSerializer _json = new JavaScriptSerializer { MaxJsonLength = MaxRequestBytes };
         private readonly ConcurrentDictionary<string, long> _nonces = new ConcurrentDictionary<string, long>();
+        private readonly ConcurrentDictionary<string, RateWindow> _rates = new ConcurrentDictionary<string, RateWindow>();
         private TcpListener _listener;
         private Thread _acceptThread;
         private volatile bool _running;
+        private int _activeConnections;
 
         public event EventHandler PhonePaired;
         public event EventHandler ActionsChanged;
 
-        public DeckServer(int port, ActionStore actions, ClientStore clients, PairingManager pairing)
+        public DeckServer(int port, ActionStore actions, ClientStore clients, PairingManager pairing, DesktopSecurity desktop)
         {
             _port = port;
             _actions = actions;
             _clients = clients;
             _pairing = pairing;
+            _desktop = desktop;
         }
 
         public void Start()
@@ -70,33 +75,46 @@ namespace SyncDeck.Agent
 
         private void HandleClient(object state)
         {
-            using (TcpClient client = (TcpClient)state)
+            TcpClient client = (TcpClient)state;
+            if (Interlocked.Increment(ref _activeConnections) > 16)
             {
-                try
+                try { using (client) WriteResponse(client.GetStream(), 429, Error("Muitas conexões simultâneas.", "rate_limited")); }
+                catch { try { client.Dispose(); } catch { } }
+                finally { Interlocked.Decrement(ref _activeConnections); }
+                return;
+            }
+            try
+            {
+                using (client)
                 {
-                    client.ReceiveTimeout = 7000;
-                    client.SendTimeout = 7000;
-                    IPEndPoint remote = client.Client.RemoteEndPoint as IPEndPoint;
-                    if (remote == null || !NetworkInfo.IsPrivateOrLoopback(remote.Address))
+                    try
                     {
-                        WriteResponse(client.GetStream(), 403, Error("Acesso permitido somente pela rede local.", "network_denied"));
-                        return;
+                        client.ReceiveTimeout = 7000;
+                        client.SendTimeout = 7000;
+                        IPEndPoint remote = client.Client.RemoteEndPoint as IPEndPoint;
+                        if (remote == null || !NetworkInfo.IsPrivateOrLoopback(remote.Address))
+                        {
+                            WriteResponse(client.GetStream(), 403, Error("Acesso permitido somente pela rede local.", "network_denied"));
+                            return;
+                        }
+                        HttpRequestData request = ReadRequest(client.GetStream());
+                        IPEndPoint local = client.Client.LocalEndPoint as IPEndPoint;
+                        Route(client.GetStream(), request, local == null ? null : local.Address, remote.Address);
                     }
-                    HttpRequestData request = ReadRequest(client.GetStream());
-                    Route(client.GetStream(), request);
-                }
-                catch (InvalidDataException ex)
-                {
-                    try { WriteResponse(client.GetStream(), 400, Error(ex.Message, "bad_request")); } catch { }
-                }
-                catch
-                {
-                    try { WriteResponse(client.GetStream(), 500, Error("Erro interno do agente.", "server_error")); } catch { }
+                    catch (InvalidDataException ex)
+                    {
+                        try { WriteResponse(client.GetStream(), 400, Error(ex.Message, "bad_request")); } catch { }
+                    }
+                    catch
+                    {
+                        try { WriteResponse(client.GetStream(), 500, Error("Erro interno do agente.", "server_error")); } catch { }
+                    }
                 }
             }
+            finally { Interlocked.Decrement(ref _activeConnections); }
         }
 
-        private void Route(NetworkStream stream, HttpRequestData request)
+        private void Route(NetworkStream stream, HttpRequestData request, IPAddress localAddress, IPAddress remoteAddress)
         {
             if (request.Method == "GET" && request.Path == "/api/status")
             {
@@ -104,9 +122,10 @@ namespace SyncDeck.Agent
                 WriteResponse(stream, 200, Success(new
                 {
                     name = Environment.MachineName,
-                    version = "0.3.1",
+                    version = "1.0.0",
                     serverTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                     pairedDevices = _clients.Count,
+                    security = new { protocol = 2, encryptedPayloads = true, desktopApproval = true },
                     pairing = pairing
                 }, "Agente disponível."));
                 return;
@@ -136,9 +155,58 @@ namespace SyncDeck.Agent
 
             string authError;
             AuthContext auth;
-            if (!Authenticate(request, out auth, out authError))
+            if (!Authenticate(request, remoteAddress, out auth, out authError))
             {
                 WriteResponse(stream, 401, Error(authError, "unauthorized"));
+                return;
+            }
+
+            if (request.Method == "GET" && request.Path == "/api/wake-config")
+            {
+                WakeConfiguration wake = NetworkInfo.GetWakeConfiguration(localAddress);
+                if (wake == null)
+                {
+                    WriteSignedResponse(stream, 422,
+                        Error("Não foi possível identificar a placa de rede usada pelo SyncDeck.", "wake_unavailable"), auth);
+                    return;
+                }
+                WriteSignedResponse(stream, 200, Success(wake,
+                    "Wake-on-LAN configurado para " + wake.InterfaceName + "."), auth);
+                return;
+            }
+
+            if (request.Method == "GET" && request.Path == "/api/catalog/apps")
+            {
+                CatalogApplication[] applications = _catalog.Applications(auth.ClientId);
+                WriteSignedResponse(stream, 200, Success(applications,
+                    applications.Length + " aplicativos encontrados no Windows."), auth);
+                return;
+            }
+
+            if (request.Method == "POST" && request.Path == "/api/catalog/pick")
+            {
+                PickPathRequest pick = Deserialize<PickPathRequest>(request.BodyText);
+                string kind = pick == null ? string.Empty : (pick.Kind ?? string.Empty).Trim().ToLowerInvariant();
+                if (kind != "file" && kind != "folder")
+                {
+                    WriteSignedResponse(stream, 400, Error("Escolha arquivo ou pasta.", "invalid_picker"), auth);
+                    return;
+                }
+                try
+                {
+                    PickedPath selected = _desktop.PickPath(auth, kind);
+                    if (selected == null)
+                    {
+                        WriteSignedResponse(stream, 409, Error("A escolha foi cancelada no PC.", "picker_cancelled"), auth);
+                        return;
+                    }
+                    selected.SelectionToken = _catalog.TrustPath(auth.ClientId, selected.Target);
+                    WriteSignedResponse(stream, 200, Success(selected, "Local escolhido no PC."), auth);
+                }
+                catch (Exception ex)
+                {
+                    WriteSignedResponse(stream, 409, Error(ex.Message, "desktop_busy"), auth);
+                }
                 return;
             }
 
@@ -219,6 +287,18 @@ namespace SyncDeck.Agent
                     WriteSignedResponse(stream, 409, Error("Essa ação precisa de confirmação.", "confirmation_required"), auth);
                     return;
                 }
+                if (action != null && operation == "open" &&
+                    (string.Equals(action.Type, "command", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(action.Type, "hotkey", StringComparison.OrdinalIgnoreCase)))
+                {
+                    DesktopDecision decision = _desktop.ApproveExecution(auth, action, operation);
+                    if (decision != DesktopDecision.Approved)
+                    {
+                        WriteSignedResponse(stream, decision == DesktopDecision.Busy ? 409 : 403,
+                            Error(DecisionMessage(decision), "desktop_approval_required"), auth);
+                        return;
+                    }
+                }
                 ExecutionResult result = _executor.Execute(action, operation);
                 WriteSignedResponse(stream, result.Ok ? 200 : 422,
                     result.Ok ? Success(null, result.Message) : Error(result.Message, "execution_failed"), auth);
@@ -231,6 +311,33 @@ namespace SyncDeck.Agent
                 try
                 {
                     if (save == null || save.Action == null) throw new InvalidOperationException("Configuração ausente.");
+                    ActionStore.Validate(save.Action);
+                    ActionDefinition existing = _actions.Load().FirstOrDefault(x =>
+                        string.Equals(x.Id, save.Action.Id, StringComparison.OrdinalIgnoreCase));
+                    bool executionChanged = existing == null ||
+                        !string.Equals(existing.Type, save.Action.Type, StringComparison.OrdinalIgnoreCase) ||
+                        !string.Equals(existing.Target, save.Action.Target, StringComparison.OrdinalIgnoreCase) ||
+                        !string.Equals(existing.Arguments ?? string.Empty, save.Action.Arguments ?? string.Empty, StringComparison.Ordinal) ||
+                        !string.Equals(existing.WorkingDirectory ?? string.Empty, save.Action.WorkingDirectory ?? string.Empty, StringComparison.OrdinalIgnoreCase) ||
+                        !string.Equals(existing.FallbackUrl ?? string.Empty, save.Action.FallbackUrl ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+                    bool trustedSelection = executionChanged &&
+                        string.IsNullOrWhiteSpace(save.Action.Arguments) &&
+                        string.IsNullOrWhiteSpace(save.Action.WorkingDirectory) &&
+                        string.IsNullOrWhiteSpace(save.Action.FallbackUrl) &&
+                        _catalog.Consume(auth.ClientId, save.SelectionToken, save.Action.Type, save.Action.Target);
+                    bool isLink = string.Equals(save.Action.Type, "url", StringComparison.OrdinalIgnoreCase);
+                    bool sensitive = string.Equals(save.Action.Type, "command", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(save.Action.Type, "hotkey", StringComparison.OrdinalIgnoreCase);
+                    if (executionChanged && (sensitive || (!isLink && !trustedSelection)))
+                    {
+                        DesktopDecision decision = _desktop.ApproveSave(auth, save.Action);
+                        if (decision != DesktopDecision.Approved)
+                        {
+                            WriteSignedResponse(stream, decision == DesktopDecision.Busy ? 409 : 403,
+                                Error(DecisionMessage(decision), "desktop_approval_required"), auth);
+                            return;
+                        }
+                    }
                     _actions.Upsert(save.Action);
                     WriteSignedResponse(stream, 200, Success(null, "Botão salvo."), auth);
                     Raise(ActionsChanged);
@@ -258,7 +365,7 @@ namespace SyncDeck.Agent
             WriteSignedResponse(stream, 404, Error("Rota não encontrada.", "not_found"), auth);
         }
 
-        private bool Authenticate(HttpRequestData request, out AuthContext auth, out string error)
+        private bool Authenticate(HttpRequestData request, IPAddress remoteAddress, out AuthContext auth, out string error)
         {
             auth = null;
             error = "Não autorizado.";
@@ -269,8 +376,9 @@ namespace SyncDeck.Agent
                 !request.Headers.TryGetValue("X-SyncDeck-Signature", out signature)) return false;
 
             byte[] secret;
+            ClientRecord client;
             long timestamp;
-            if (!_clients.TryGetSecret(clientId, out secret) || !long.TryParse(timestampText, out timestamp)) return false;
+            if (!_clients.TryGetClient(clientId, out client, out secret) || !long.TryParse(timestampText, out timestamp)) return false;
             long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             if (Math.Abs(now - timestamp) > 90)
             {
@@ -291,8 +399,44 @@ namespace SyncDeck.Agent
                 return false;
             }
             PruneNonces(now);
-            auth = new AuthContext { Secret = secret, Nonce = nonce };
+            if (!AllowRequest(clientId, now))
+            {
+                error = "Muitas solicitações. Aguarde alguns segundos.";
+                return false;
+            }
+            string encryption;
+            bool encrypted = request.Headers.TryGetValue("X-SyncDeck-Encryption", out encryption) &&
+                string.Equals(encryption, EncryptionProtocol, StringComparison.OrdinalIgnoreCase);
+            if (encrypted && request.BodyBytes != null && request.BodyBytes.Length > 0)
+            {
+                try { request.BodyBytes = PayloadCipher.Decrypt(secret, request.BodyBytes, MaxRequestBytes); }
+                catch
+                {
+                    error = "Não foi possível descriptografar a solicitação.";
+                    return false;
+                }
+            }
+            auth = new AuthContext
+            {
+                Secret = secret,
+                Nonce = nonce,
+                ClientId = clientId,
+                DeviceName = client.DeviceName,
+                RemoteAddress = remoteAddress == null ? string.Empty : remoteAddress.ToString(),
+                Encrypted = encrypted
+            };
             return true;
+        }
+
+        private bool AllowRequest(string clientId, long now)
+        {
+            RateWindow window = _rates.GetOrAdd(clientId, ignored => new RateWindow { StartedAt = now, Count = 0 });
+            lock (window)
+            {
+                if (now - window.StartedAt >= 60) { window.StartedAt = now; window.Count = 0; }
+                window.Count++;
+                return window.Count <= 120;
+            }
         }
 
         private void PruneNonces(long now)
@@ -321,6 +465,13 @@ namespace SyncDeck.Agent
             return _json.Serialize(new ApiEnvelope { Ok = false, Message = message, Code = code });
         }
 
+        private static string DecisionMessage(DesktopDecision decision)
+        {
+            if (decision == DesktopDecision.Busy) return "Já existe outra confirmação aberta no PC.";
+            if (decision == DesktopDecision.Unavailable) return "O agente não conseguiu mostrar a confirmação no PC.";
+            return "A ação foi negada ou expirou no PC.";
+        }
+
         private static HttpRequestData ReadRequest(NetworkStream stream)
         {
             MemoryStream memory = new MemoryStream();
@@ -329,7 +480,8 @@ namespace SyncDeck.Agent
             int contentLength = 0;
             while (memory.Length < MaxRequestBytes)
             {
-                int read = stream.Read(buffer, 0, buffer.Length);
+                int remaining = MaxRequestBytes - (int)memory.Length;
+                int read = stream.Read(buffer, 0, Math.Min(buffer.Length, remaining));
                 if (read <= 0) break;
                 memory.Write(buffer, 0, read);
                 byte[] current = memory.ToArray();
@@ -341,6 +493,8 @@ namespace SyncDeck.Agent
                         string headersOnly = Encoding.ASCII.GetString(current, 0, headerEnd);
                         contentLength = ParseContentLength(headersOnly);
                         if (contentLength < 0 || contentLength > MaxRequestBytes) throw new InvalidDataException("Corpo da requisição inválido.");
+                        if (headerEnd + 4 + contentLength > MaxRequestBytes)
+                            throw new InvalidDataException("Requisição muito grande.");
                     }
                 }
                 if (headerEnd >= 0 && memory.Length >= headerEnd + 4 + contentLength) break;
@@ -401,34 +555,38 @@ namespace SyncDeck.Agent
         private static void WriteSignedResponse(NetworkStream stream, int statusCode, string json, AuthContext auth)
         {
             byte[] body = Encoding.UTF8.GetBytes(json ?? "{}");
+            if (auth.Encrypted) body = PayloadCipher.Encrypt(auth.Secret, body);
             string signature = RequestSigner.SignResponse(auth.Secret, statusCode, auth.Nonce, body);
-            WriteResponseBytes(stream, statusCode, body, signature);
+            WriteResponseBytes(stream, statusCode, body, signature, "application/json; charset=utf-8", auth.Encrypted);
         }
 
         private static void WriteResponseBytes(NetworkStream stream, int statusCode, byte[] body, string signature)
         {
-            WriteResponseBytes(stream, statusCode, body, signature, "application/json; charset=utf-8");
+            WriteResponseBytes(stream, statusCode, body, signature, "application/json; charset=utf-8", false);
         }
 
         private static void WriteSignedBinaryResponse(NetworkStream stream, int statusCode, byte[] body,
             string contentType, AuthContext auth)
         {
+            if (auth.Encrypted) body = PayloadCipher.Encrypt(auth.Secret, body);
             string signature = RequestSigner.SignResponse(auth.Secret, statusCode, auth.Nonce, body);
-            WriteResponseBytes(stream, statusCode, body, signature, contentType);
+            WriteResponseBytes(stream, statusCode, body, signature, contentType, auth.Encrypted);
         }
 
         private static void WriteResponseBytes(NetworkStream stream, int statusCode, byte[] body, string signature,
-            string contentType)
+            string contentType, bool encrypted)
         {
             string status = statusCode == 200 ? "OK" : statusCode == 400 ? "Bad Request" :
                 statusCode == 401 ? "Unauthorized" : statusCode == 403 ? "Forbidden" :
                 statusCode == 404 ? "Not Found" : statusCode == 409 ? "Conflict" :
-                statusCode == 422 ? "Unprocessable Entity" : "Internal Server Error";
+                statusCode == 422 ? "Unprocessable Entity" : statusCode == 429 ? "Too Many Requests" :
+                "Internal Server Error";
             string header = "HTTP/1.1 " + statusCode + " " + status + "\r\n" +
                 "Content-Type: " + contentType + "\r\n" +
                 "Content-Length: " + body.Length + "\r\n" +
                 "Cache-Control: no-store\r\n" +
                 "X-Content-Type-Options: nosniff\r\n" +
+                (encrypted ? "X-SyncDeck-Encryption: " + EncryptionProtocol + "\r\n" : string.Empty) +
                 (string.IsNullOrWhiteSpace(signature) ? string.Empty : "X-SyncDeck-Response-Signature: " + signature + "\r\n") +
                 "Connection: close\r\n\r\n";
             byte[] head = Encoding.ASCII.GetBytes(header);
@@ -446,29 +604,12 @@ namespace SyncDeck.Agent
         {
             Stop();
         }
-    }
 
-    internal static class NetworkInfo
-    {
-        public static string[] LocalIPv4Addresses()
+        private sealed class RateWindow
         {
-            return NetworkInterface.GetAllNetworkInterfaces()
-                .Where(x => x.OperationalStatus == OperationalStatus.Up && x.NetworkInterfaceType != NetworkInterfaceType.Loopback)
-                .SelectMany(x => x.GetIPProperties().UnicastAddresses)
-                .Where(x => x.Address.AddressFamily == AddressFamily.InterNetwork && IsPrivateOrLoopback(x.Address))
-                .Select(x => x.Address.ToString())
-                .Distinct().ToArray();
-        }
-
-        public static bool IsPrivateOrLoopback(IPAddress address)
-        {
-            if (IPAddress.IsLoopback(address)) return true;
-            byte[] bytes = address.GetAddressBytes();
-            if (bytes.Length != 4) return false;
-            return bytes[0] == 10 ||
-                   (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) ||
-                   (bytes[0] == 192 && bytes[1] == 168) ||
-                   (bytes[0] == 169 && bytes[1] == 254);
+            public long StartedAt;
+            public int Count;
         }
     }
+
 }

@@ -63,6 +63,14 @@ namespace SyncDeck.Agent
         public int WindowCount { get; set; }
     }
 
+    public sealed class WakeConfiguration
+    {
+        public string MacAddress { get; set; }
+        public string BroadcastAddress { get; set; }
+        public int Port { get; set; }
+        public string InterfaceName { get; set; }
+    }
+
     public sealed class ClientRecord
     {
         public string ClientId { get; set; }
@@ -94,6 +102,35 @@ namespace SyncDeck.Agent
     public sealed class SaveActionRequest
     {
         public ActionDefinition Action { get; set; }
+        public string SelectionToken { get; set; }
+    }
+
+    public sealed class CatalogApplication
+    {
+        public string Name { get; set; }
+        public string Target { get; set; }
+        public string[] ProcessNames { get; set; }
+        public string[] AppNames { get; set; }
+        public string Icon { get; set; }
+        public string Color { get; set; }
+        public string SelectionToken { get; set; }
+    }
+
+    public sealed class PickPathRequest
+    {
+        public string Kind { get; set; }
+    }
+
+    public sealed class PickedPath
+    {
+        public string Label { get; set; }
+        public string Type { get; set; }
+        public string Target { get; set; }
+        public string[] ProcessNames { get; set; }
+        public string[] AppNames { get; set; }
+        public string Icon { get; set; }
+        public string Color { get; set; }
+        public string SelectionToken { get; set; }
     }
 
     public sealed class DeleteActionRequest
@@ -148,5 +185,9 @@ namespace SyncDeck.Agent
     {
         public byte[] Secret { get; set; }
         public string Nonce { get; set; }
+        public string ClientId { get; set; }
+        public string DeviceName { get; set; }
+        public string RemoteAddress { get; set; }
+        public bool Encrypted { get; set; }
     }
 }

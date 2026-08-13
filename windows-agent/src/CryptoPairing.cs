@@ -128,6 +128,7 @@ namespace SyncDeck.Agent
                 if (payload == null || !SecureEquals(payload.Code, _code) ||
                     !Guid.TryParse(payload.ClientId, out parsed) ||
                     string.IsNullOrWhiteSpace(payload.DeviceName) || payload.DeviceName.Length > 80 ||
+                    payload.DeviceName.Any(char.IsControl) ||
                     !TryBase64UrlDecode(payload.Secret, out secret) || secret.Length != 32)
                 {
                     error = _remainingAttempts > 0
@@ -232,6 +233,64 @@ namespace SyncDeck.Agent
                 difference |= av ^ bv;
             }
             return difference == 0;
+        }
+    }
+
+    internal static class PayloadCipher
+    {
+        private static readonly byte[] Context = Encoding.UTF8.GetBytes("SyncDeck.Encryption.v1");
+
+        private static byte[] DeriveKey(byte[] secret)
+        {
+            using (HMACSHA256 hmac = new HMACSHA256(secret))
+                return hmac.ComputeHash(Context);
+        }
+
+        public static byte[] Encrypt(byte[] secret, byte[] plaintext)
+        {
+            if (secret == null || secret.Length != 32) throw new CryptographicException("Chave inválida.");
+            byte[] value = plaintext ?? new byte[0];
+            using (Aes aes = Aes.Create())
+            {
+                aes.KeySize = 256;
+                aes.BlockSize = 128;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                aes.Key = DeriveKey(secret);
+                aes.GenerateIV();
+                using (ICryptoTransform encryptor = aes.CreateEncryptor())
+                {
+                    byte[] ciphertext = encryptor.TransformFinalBlock(value, 0, value.Length);
+                    byte[] result = new byte[aes.IV.Length + ciphertext.Length];
+                    Buffer.BlockCopy(aes.IV, 0, result, 0, aes.IV.Length);
+                    Buffer.BlockCopy(ciphertext, 0, result, aes.IV.Length, ciphertext.Length);
+                    return result;
+                }
+            }
+        }
+
+        public static byte[] Decrypt(byte[] secret, byte[] payload, int maximumPlaintextBytes)
+        {
+            if (secret == null || secret.Length != 32 || payload == null || payload.Length < 32 || payload.Length % 16 != 0)
+                throw new CryptographicException("Conteúdo criptografado inválido.");
+            using (Aes aes = Aes.Create())
+            {
+                aes.KeySize = 256;
+                aes.BlockSize = 128;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                aes.Key = DeriveKey(secret);
+                byte[] iv = new byte[16];
+                Buffer.BlockCopy(payload, 0, iv, 0, iv.Length);
+                aes.IV = iv;
+                using (ICryptoTransform decryptor = aes.CreateDecryptor())
+                {
+                    byte[] plaintext = decryptor.TransformFinalBlock(payload, iv.Length, payload.Length - iv.Length);
+                    if (plaintext.Length > maximumPlaintextBytes)
+                        throw new CryptographicException("Conteúdo descriptografado muito grande.");
+                    return plaintext;
+                }
+            }
         }
     }
 }

@@ -147,11 +147,21 @@ namespace SyncDeck.Agent
                 throw new InvalidOperationException("O identificador deve ter de 2 a 64 caracteres: letras, números e hífen.");
             if (string.IsNullOrWhiteSpace(action.Label) || action.Label.Length > 40)
                 throw new InvalidOperationException("O nome da ação deve ter entre 1 e 40 caracteres.");
+            if (ContainsControl(action.Label) || ContainsControl(action.Target) ||
+                ContainsControl(action.Arguments) || ContainsControl(action.WorkingDirectory) ||
+                ContainsControl(action.FallbackUrl))
+                throw new InvalidOperationException("A configuração contém caracteres de controle não permitidos.");
             string[] types = { "app", "url", "path", "command", "hotkey" };
             if (!types.Contains(action.Type))
                 throw new InvalidOperationException("Tipo de ação inválido.");
             if (string.IsNullOrWhiteSpace(action.Target) || action.Target.Length > 1000)
                 throw new InvalidOperationException("Informe um destino válido.");
+            if ((action.Arguments ?? string.Empty).Length > 1000)
+                throw new InvalidOperationException("Os argumentos podem ter no máximo 1000 caracteres.");
+            if ((action.WorkingDirectory ?? string.Empty).Length > 500)
+                throw new InvalidOperationException("A pasta de trabalho é muito longa.");
+            if ((action.FallbackUrl ?? string.Empty).Length > 1000)
+                throw new InvalidOperationException("O link alternativo é muito longo.");
             if (action.Type == "url")
             {
                 Uri uri;
@@ -159,11 +169,19 @@ namespace SyncDeck.Agent
                     (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
                     throw new InvalidOperationException("Links devem começar com http:// ou https://.");
             }
-            if (action.Type == "command") action.Confirm = true;
+            if (action.Type == "hotkey" && action.Target.Length > 120)
+                throw new InvalidOperationException("O atalho de teclado é muito longo.");
+            if (action.Type == "command" || action.Type == "hotkey") action.Confirm = true;
+        }
+
+        private static bool ContainsControl(string value)
+        {
+            return !string.IsNullOrEmpty(value) && value.Any(char.IsControl);
         }
 
         private static void ValidateAll(List<ActionDefinition> actions)
         {
+            if (actions.Count > 100) throw new InvalidOperationException("O SyncDeck aceita no máximo 100 botões.");
             HashSet<string> ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (ActionDefinition action in actions)
             {
@@ -317,8 +335,14 @@ namespace SyncDeck.Agent
 
         public bool TryGetSecret(string clientId, out byte[] secret)
         {
+            ClientRecord ignored;
+            return TryGetClient(clientId, out ignored, out secret);
+        }
+
+        public bool TryGetClient(string clientId, out ClientRecord record, out byte[] secret)
+        {
             secret = null;
-            ClientRecord record = LoadRecords().FirstOrDefault(x =>
+            record = LoadRecords().FirstOrDefault(x =>
                 string.Equals(x.ClientId, clientId, StringComparison.OrdinalIgnoreCase));
             if (record == null) return false;
             try

@@ -1,0 +1,42 @@
+SYNCDECK 0.5.0 — IPHONE, ANDROID E WINDOWS
+
+O QUE MUDOU
+- Agora existe um aplicativo nativo para iPhone em ios-app.
+- Android e iPhone podem permanecer pareados ao mesmo tempo.
+- O GitHub Actions gera um IPA sem assinatura para instalação gratuita.
+
+NO WINDOWS
+1. Se já estiver usando o agente 0.4.0, o iPhone é compatível e pode ser testado sem desparear o Android.
+2. Para manter as versões iguais, execute windows-agent\Compilar-e-Iniciar.bat.
+3. Confirme versão 0.5.0 em Status e conexão.
+4. Não apague %LOCALAPPDATA%\SyncDeck: ali estão botões e celulares pareados.
+
+NO ANDROID
+1. A versão Android também foi atualizada para 0.5.0.
+2. Gere o APK com android-app\Gerar-APK.bat.
+3. Instale por cima do aplicativo atual; não desinstale, para preservar o pareamento.
+
+NO IPHONE
+1. Publique o conteúdo deste repositório no GitHub.
+2. Abra Actions > Validate and build > Run workflow.
+3. Ao terminar, baixe o artefato SyncDeck-iOS-unsigned.
+4. Extraia SyncDeck-unsigned.ipa.
+5. Siga INSTALAR-NO-IPHONE.txt para assinar e instalar pelo Windows.
+6. No primeiro acesso, permita Rede Local.
+7. No agente Windows, gere um novo código e pareie o iPhone. O Android continuará pareado.
+
+CONTA GRATUITA DA APPLE
+- O aplicativo expira após 7 dias.
+- Reinstale o mesmo IPA por cima antes do prazo; não apague o app.
+- A renovação mantém endereço e pareamento quando a instalação é feita com a mesma conta e identificador.
+- Nunca publique senha, certificado, arquivo .p12 ou perfil .mobileprovision no GitHub.
+
+WAKE-ON-LAN
+- Abra o SyncDeck no iPhone uma vez com o PC ligado e toque em atualizar.
+- A configuração Ethernet será salva no iPhone.
+- Depois disso, o botão Ligar PC continuará disponível quando o agente estiver offline.
+
+GUIAS
+- Instalação no iPhone: INSTALAR-NO-IPHONE.txt
+- Manual completo: README.md
+- Diagnóstico Wake-on-LAN: docs\WAKE-ON-LAN.md

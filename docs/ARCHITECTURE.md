@@ -1,120 +1,117 @@
 # Arquitetura
 
-## Objetivo
+O SyncDeck separa apresentação e execução. O Android mostra o painel; o agente Windows mantém as ações autorizadas, observa janelas e interage com o sistema. Não existe backend SyncDeck.
 
-O SyncDeck separa interface e execução: o Android apresenta o painel, enquanto o Windows mantém as ações autorizadas e interage com o sistema operacional. A comunicação ocorre diretamente na rede local, sem serviço em nuvem.
+## Visão geral
 
-## Componentes
-
-~~~mermaid
+```mermaid
 flowchart TD
     subgraph Android
-        UI["MainActivity<br/>painel, estados e editor"]
-        API["ApiClient<br/>HTTP, cache e assinaturas"]
-        STORE["SecureStore<br/>Android Keystore"]
-        UI --> API
-        API --> STORE
+        UI["Compose UI"] --> CTRL["DeckController"]
+        CTRL --> API["ApiClient"]
+        API --> KEY["Android Keystore"]
     end
     subgraph Windows
-        SERVER["DeckServer<br/>rotas e autenticação"]
-        EXEC["ActionExecutor<br/>abrir, focar e fechar"]
-        WINDOWS["WindowInspector<br/>janelas visíveis"]
-        ICONS["IconResolver<br/>extração de ícones"]
-        DATA["Stores<br/>ações, clientes e ajustes"]
-        SERVER --> EXEC
-        EXEC --> WINDOWS
-        SERVER --> ICONS
-        SERVER --> DATA
+        SERVER["DeckServer"] --> EXEC["ActionExecutor"]
+        SERVER --> CATALOG["Catálogo e seletores"]
+        SERVER --> APPROVAL["Aprovação no desktop"]
+        SERVER --> DATA["Ações e clientes"]
     end
-    API <-->|"IPv4 privado · porta 47321"| SERVER
-~~~
+    API <-->|"LAN · protocolo 2"| SERVER
+```
 
-## Responsabilidades
+O HTTP/1.1 é somente a moldura de transporte local. No cliente Android 1.0, todo conteúdo autenticado é cifrado e recebe HMAC antes de atravessar a rede.
 
-### Android
+## Android
+
+| Arquivo | Responsabilidade |
+|---|---|
+| `MainActivity.kt` | Tema, painel responsivo, animações, cartões, gestos e diálogos |
+| `DeckController.kt` | Estado único da tela, polling, reconexão, confirmações e Wake-on-LAN |
+| `ActionWizard.kt` | Fluxo guiado Programa/Site/Pasta/Comando |
+| `ApiClient.kt` | Rede, pareamento, descoberta pelo fingerprint, catálogo, ícones e Magic Packet |
+| `Security.kt` | Android Keystore, AES-GCM local, HMAC e cifra do protocolo 2 |
+| `Models.kt` | Modelos imutáveis e conversão JSON |
+
+A interface usa Kotlin e Jetpack Compose. Em retrato, o painel tem duas colunas; em paisagem, usa três colunas, oculta o cabeçalho e mostra somente logos. O toque longo abre o menu do cartão.
+
+`DeckController` é a fronteira entre UI e rede. Callbacks do `ApiClient` retornam ao thread principal antes de alterar o estado Compose. Operações de disco, rede e criptografia não são executadas no thread da interface.
+
+## Windows
 
 | Classe | Responsabilidade |
 |---|---|
-| <code>MainActivity</code> | Montar a interface, executar ações, animar cartões e atualizar estados |
-| <code>ApiClient</code> | Construir requisições, validar respostas, buscar ações/ícones e recuperar mudanças do IP local |
-| <code>SecureStore</code> | Proteger o segredo do cliente com Android Keystore e AES-GCM |
-| <code>SignatureUtil</code> | Hash SHA-256, HMAC e Base64URL |
-| <code>SyncAction</code> | Modelo JSON de uma ação |
-| <code>ActionEditorDialog</code> | Editar ações pelo celular |
+| `AgentContext` | Bandeja, ciclo de vida, pareamento, revogação e inicialização automática |
+| `DeckServer` | HTTP limitado, autenticação, cifra, rate limit e roteamento |
+| `DesktopSecurity` | Confirmações independentes e seletores nativos no desktop |
+| `CatalogService` | Programas instalados e tokens de seleção descartáveis |
+| `ActionExecutor` | Abrir, focar, fechar e executar uma ação já salva |
+| `WindowInspector` | Relacionar ações a janelas Win32 visíveis |
+| `ChromeProfileResolver` | Reutilizar perfil Chrome ativo ou usado por último |
+| `IconResolver` | Extrair ou gerar PNGs para os botões |
+| `ActionStore` / `ClientStore` | Validar ações e persistir clientes com DPAPI e backup atômico |
 
-### Windows
+O agente usa C# compatível com .NET Framework 4.8 para funcionar em Windows 10/11 sem instalar um runtime adicional. Um mutex impede duas instâncias simultâneas.
 
-| Classe | Responsabilidade |
-|---|---|
-| <code>AgentContext</code> | Ciclo de vida do agente, bandeja e inicialização |
-| <code>DeckServer</code> | Servidor TCP/HTTP, autenticação e roteamento |
-| <code>ActionExecutor</code> | Abrir, focar, fechar e executar ações |
-| <code>WindowInspector</code> | Enumerar janelas Win32 e relacioná-las aos processos |
-| <code>ChromeProfileResolver</code> | Selecionar o perfil ativo/último do Chrome |
-| <code>IconResolver</code> | Resolver executáveis, AppIDs e PNGs |
-| <code>ActionStore</code> | Validar e persistir ações |
-| <code>ClientStore</code> | Persistir segredos protegidos por DPAPI |
-| <code>PairingManager</code> | Código temporário e chave RSA do agente |
+## Fluxo de uma ação
 
-## Fluxo de abertura
-
-~~~mermaid
+```mermaid
 sequenceDiagram
     participant A as Android
-    participant S as DeckServer
-    participant E as ActionExecutor
+    participant S as Agente
+    participant P as Aprovação PC
     participant W as Windows
-    A->>S: POST /api/execute (assinado)
-    S->>S: Autentica e localiza ActionId
-    S->>E: Execute(action, open)
-    E->>W: Procura janela visível
-    alt Janela encontrada
-        E->>W: Restaura e traz para frente
-    else Janela ausente
-        E->>W: Inicia destino configurado
+    A->>S: ActionId + operação, cifrado e assinado
+    S->>S: HMAC, horário, nonce e limites
+    opt Comando ou atalho
+        S->>P: Exibe destino completo
+        P-->>S: Autoriza ou nega
     end
-    S-->>A: Resposta assinada
-~~~
+    S->>W: Foca, abre ou envia WM_CLOSE
+    S-->>A: Resposta cifrada e assinada
+```
 
-## Fluxo de estado
+O celular nunca envia um executável diretamente para `/api/execute`; envia apenas o ID de uma ação que já existe no Windows. Comandos e atalhos exigem confirmação no Android e aprovação independente no PC a cada execução.
 
-1. O Android carrega <code>/api/actions</code>, que já inclui <code>IsOpen</code> e <code>WindowCount</code>.
-2. Enquanto a Activity está ativa, consulta <code>/api/actions/state</code> aproximadamente a cada 2,4 segundos.
-3. O agente executa uma única captura das janelas visíveis e compara cada ação com nomes de processo, executável e pistas de título.
-4. O Android atualiza apenas o estilo dos cartões alterados.
-5. Processos em segundo plano sem janela visível permanecem fechados para fins de interface.
+## Criação de botão
 
-## Detecção de janelas
+1. **Programa:** o agente consulta App Paths e Menu Iniciar, retorna até 100 opções e cria um token temporário.
+2. **Pasta/arquivo:** o agente abre um seletor nativo; o caminho escolhido recebe token equivalente.
+3. **Site:** o Android valida HTTP/HTTPS e pode optar pelo Chrome.
+4. **Comando:** argumentos ficam separados do executável e sempre exigem aprovação no PC.
+5. Ao salvar, o agente valida novamente todos os campos. O token dura cinco minutos, vale uma vez e está vinculado ao dispositivo, tipo e destino.
 
-<code>WindowInspector</code> usa <code>EnumWindows</code>, filtra janelas invisíveis, pertencentes a outra janela, ocultas pelo DWM e superfícies do shell. Para aplicativos UWP, também inspeciona processos de janelas filhas. O resultado é ordenado pela ordem retornada pelo Windows, normalmente próxima da ordem Z.
+Qualquer criação não confiável ou alteração de tipo, destino, argumentos, diretório de trabalho ou fallback sensível abre a confirmação no desktop.
 
-Hosts intermediários conhecidos, como <code>ApplicationFrameHost</code> e <code>WindowsTerminal</code>, podem usar o título como pista adicional. Títulos são usados somente dentro do PC e nunca são enviados ao Android.
+## Estado das janelas
+
+O Android consulta `/api/actions/state` enquanto a tela está ativa. O agente faz uma captura de janelas visíveis com `EnumWindows`, ignora superfícies do shell e processos sem janela e responde somente com ID, booleano aberto e quantidade. Títulos permanecem no PC.
+
+Ao abrir uma ação, o agente primeiro tenta restaurar e trazer a janela existente para frente. O fechamento usa `WM_CLOSE`, permitindo que o programa peça para salvar. Quando há várias janelas, o Android pergunta se deve fechar uma ou todas.
 
 ## Persistência
 
-O agente grava no perfil do usuário:
-
-| Arquivo | Conteúdo |
+| Local | Conteúdo |
 |---|---|
-| <code>%LOCALAPPDATA%\SyncDeck\actions.json</code> | Ações configuradas |
-| <code>%LOCALAPPDATA%\SyncDeck\clients.json</code> | Clientes pareados e segredos protegidos |
-| <code>%LOCALAPPDATA%\SyncDeck\clients.backup.json</code> | Cópia recuperável do pareamento |
-| <code>%LOCALAPPDATA%\SyncDeck\settings.json</code> | Porta e inicialização |
+| Android Keystore | Chave AES não exportável que protege o segredo de pareamento |
+| SharedPreferences privadas | Endpoint, UUID, fingerprint, segredo cifrado e Wake-on-LAN |
+| Cache Android | PNGs de ícones; pode ser apagado sem perder configuração |
+| `%LOCALAPPDATA%\SyncDeck\actions.json` | Definições dos botões |
+| `%LOCALAPPDATA%\SyncDeck\clients.json` | Clientes com segredo protegido por DPAPI `CurrentUser` |
+| `%LOCALAPPDATA%\SyncDeck\clients.backup.json` | Backup recuperável do pareamento |
+| `%LOCALAPPDATA%\SyncDeck\settings.json` | Porta e preferência de inicialização |
 
-O Android usa SharedPreferences para endpoint, ID e impressão digital do PC, e Android Keystore para o segredo. Ícones ficam apenas no cache da aplicação. Quando o endereço salvo deixa de responder, o Android examina por alguns segundos os endereços privados da rede e aceita somente o agente com a mesma impressão digital pareada.
+Quando o endereço salvo não responde, o Android examina por tempo limitado os IPv4 privados locais e aceita somente o agente com o mesmo fingerprint já pareado.
 
 ## Limites de confiança
 
-- A rede local não é tratada como confiável: comandos e respostas exigem HMAC.
-- O usuário precisa conferir a impressão digital no pareamento.
-- Um dispositivo pareado é confiável para executar todas as ações salvas.
-- O agente executa no mesmo nível de integridade do usuário. Uma janela elevada pode recusar foco ou fechamento.
-- HTTP autenticado evita alteração e repetição, mas não oferece confidencialidade.
+- Somente IPv4 privado, loopback ou link-local; não há controle pela internet.
+- A LAN não é considerada secreta: HMAC, cifra, nonce e timestamp protegem o canal Android.
+- O agente executa com os direitos do usuário conectado; não eleva privilégio.
+- Uma sessão Windows bloqueada continua bloqueada, e janelas elevadas podem recusar foco.
+- O Magic Packet não possui autenticação e apenas liga hardware compatível; não contorna PIN, senha ou BitLocker.
+- Um Android ou Windows já comprometido está fora do modelo de ameaça.
 
-## Decisões técnicas
+## Cliente iOS experimental
 
-- **Sem backend:** menor superfície operacional e nenhuma conta externa.
-- **C#/.NET Framework:** compilação disponível no próprio Windows, sem instalador de SDK adicional.
-- **Android Java nativo:** APK pequeno e poucas dependências.
-- **HTTP mínimo sobre TcpListener:** protocolo simples, porém exige cuidado manual com parsing e limites.
-- **WM_CLOSE:** preserva o comportamento normal do aplicativo e evita encerramento forçado.
+O cliente SwiftUI 0.5 continua no repositório para uso pessoal e compatibilidade. Ele usa o protocolo HMAC legado, sem a cifra de conteúdo v2, e não faz parte da publicação Android 1.0 na Google Play.

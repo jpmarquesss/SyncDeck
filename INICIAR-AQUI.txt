@@ -2,23 +2,34 @@ SYNCDECK — PRIMEIROS PASSOS
 
 1. No PC, abra a pasta windows-agent.
 2. Execute Compilar-e-Iniciar.bat.
-3. Execute Configurar-Firewall.bat uma vez.
-4. No Android Studio, abra a pasta android-app e gere o APK.
-5. Instale SyncDeck.apk no Android.
+3. Execute Instalar-no-Windows.bat para manter o agente após reiniciar.
+4. Execute Configurar-Firewall.bat uma vez como administrador.
+5. Escolha o celular:
+   - ANDROID: abra android-app no Android Studio, gere e instale SyncDeck.apk.
+   - IPHONE SEM MAC: publique no GitHub, baixe o artefato SyncDeck-iOS-unsigned e siga INSTALAR-NO-IPHONE.txt.
 6. Clique no ícone do SyncDeck perto do relógio do Windows e escolha Parear celular.
 7. No app, digite o IP, confira a impressão digital e use o código de 6 números.
+
+Android e iPhone podem permanecer pareados ao mesmo tempo. Cada aparelho usa seu próprio código inicial.
 
 TOQUE: abrir ou trazer a janela para frente.
 BOTÃO ×: fechar com confirmação; se houver várias janelas, escolher entre uma ou todas.
 TOQUE LONGO: editar o botão.
-BOTÃO +: adicionar um novo botão.
+BOTÃO +: escolher Programa, Site, Pasta/arquivo ou Comando em um assistente.
 
 MODO DEITADO: tela cheia com 3 colunas e somente os logos dos aplicativos.
 TOQUE LONGO DEITADO: menu para abrir, fechar ou editar.
 As imagens são encontradas automaticamente no Windows e guardadas em cache no celular.
 Um contorno luminoso identifica os aplicativos abertos e é atualizado automaticamente.
 O Chrome abre direto no perfil ativo/último perfil usado, sem mostrar o seletor de contas.
-Se o roteador mudar o IP do PC, o Android procura automaticamente o mesmo computador.
-O botão Desligar PC sempre pede confirmação e aguarda 5 segundos.
+Se o roteador mudar o IP do PC, o celular procura automaticamente o mesmo computador.
+Comandos, inclusive Desligar PC, pedem confirmação no Android e aprovação no PC.
+
+BOTÃO LIGAR PC:
+Atualize o agente e o Android para 1.0.0, abra o app uma vez com o PC ligado e toque em atualizar.
+Depois configure Wake-on-LAN/PME na BIOS, a placa Realtek e desative a Inicialização Rápida.
+O botão continua disponível quando o PC estiver totalmente desligado.
+Instruções detalhadas: docs\WAKE-ON-LAN.md
 
 Manual completo: README.md
+Instalação no iPhone: INSTALAR-NO-IPHONE.txt
